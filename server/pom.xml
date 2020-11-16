@@ -7,7 +7,7 @@
     <artifactId>runui</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <description>RUN UI</description>
+    <description>Run UI</description>
     <organization>
         <name>Xesnet</name>
         <url>https://www.xesnet.com</url>
@@ -18,116 +18,77 @@
     </scm>
 
     <dependencies>
-        <!-- Jetty Bootstrap -->
+        <!--Jaxb-->
         <dependency>
-            <groupId>org.teknux</groupId>
-            <artifactId>jetty-bootstrap</artifactId>
-            <version>${jetty-bootstrap.version}</version>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.teknux</groupId>
-            <artifactId>jetty-bootstrap-annotations</artifactId>
-            <version>${jetty-bootstrap.version}</version>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.teknux</groupId>
-            <artifactId>jetty-bootstrap-websocket</artifactId>
-            <version>${jetty-bootstrap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.teknux</groupId>
-            <artifactId>jetty-bootstrap-servlets</artifactId>
-            <version>${jetty-bootstrap.version}</version>
-        </dependency>
-		
-        <!-- Tests -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${jaxb-core.version}</version>
         </dependency>
 
-        <!-- Logs -->
+        <!--Jetty-->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
-        <!-- For condition in logback.xml -->
         <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>${janino.version}</version>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
-        <!-- redirect JDK logging to logback -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
-        <!-- redirect Log4J logging to logback -->
+
+        <!--Jersey-->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${jersey.version}</version>
         </dependency>
-        <!-- redirect apache commons logging to logback -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+
+        <!--Jackson Yaml-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>application.properties</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <!-- We need to use filtering only for application.properties, otherwise
-                    charset of i18n property files will be change by maven -->
-                <filtering>true</filtering>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>application.properties</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/webapp</directory>
-                <targetPath>webapp</targetPath>
-            </resource>
-        </resources>
         <plugins>
-            <!-- add vcs revision number to properties -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>${buildnumber-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <buildNumberPropertyName>vcs.revision</buildNumberPropertyName>
-                </configuration>
-            </plugin>
-
-            <!-- make one jar file containing all dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -140,32 +101,16 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>shade</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>${main.class}</Main-Class>
                                     </manifestEntries>
                                 </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
-                                    <resources>
-                                        <resource>config.ini</resource>
-                                    </resources>
-                                </transformer>
                             </transformers>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
                         </configuration>
                     </execution>
                 </executions>
@@ -174,27 +119,18 @@
     </build>
 
     <properties>
-        <finalName>RunUI</finalName>
+        <main.class>com.xesnet.runui.Application</main.class>
 
-        <jre.location>auto</jre.location>
+        <jaxb.version>2.3.1</jaxb.version>
+        <jaxb-core.version>2.3.0.1</jaxb-core.version>
+        <jetty.version>9.4.34.v20201102</jetty.version>
+        <jersey.version>2.32</jersey.version>
+        <jackson.version>2.11.3</jackson.version>
 
-        <version.timestamp>${project.version}.${maven.build.timestamp}</version.timestamp>
-        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
 
-        <main.class>com.xesnet.runui.Main</main.class>
-
-        <vcs.revision>Unknown</vcs.revision>
-
-        <logback.version>1.2.3</logback.version>
-        <janino.version>3.0.8</janino.version>
-        <jetty-bootstrap.version>1.0.14</jetty-bootstrap.version>
-        <junit.version>4.12</junit.version>
-        <mockito.version>2.23.0</mockito.version>
-        <slf4j.version>1.7.25</slf4j.version>
-
-        <maven-shade-plugin.version>3.1.0</maven-shade-plugin.version>
-        <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
-        <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
     </properties>
 </project>

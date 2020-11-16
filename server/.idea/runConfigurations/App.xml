@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="App" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="11" />
+    <option name="MAIN_CLASS_NAME" value="com.xesnet.runui.Application" />
+    <module name="runui" />
+    <option name="PROGRAM_PARAMETERS" value="C:\Users\ppinon\Source\runui.git\server\config" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.xesnet.runui.ws.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
