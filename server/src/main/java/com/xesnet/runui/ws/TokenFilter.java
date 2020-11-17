@@ -1,7 +1,7 @@
 package com.xesnet.runui.ws;
 
-import com.xesnet.runui.Secured;
-import com.xesnet.runui.TokenRegistry;
+import com.xesnet.runui.server.Secured;
+import com.xesnet.runui.registry.TokenRegistry;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -10,7 +10,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
 import java.security.Principal;
 
 
@@ -18,11 +17,16 @@ import java.security.Principal;
  * @author Pierre PINON
  */
 @Secured
-@Provider
 @Priority(Priorities.AUTHENTICATION)
 public class TokenFilter implements ContainerRequestFilter {
 
     private static final String AUTHENTICATION_SCHEME = "Token";
+
+    private final TokenRegistry tokenRegistry;
+
+    public TokenFilter(TokenRegistry tokenRegistry) {
+        this.tokenRegistry = tokenRegistry;
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
@@ -36,12 +40,14 @@ public class TokenFilter implements ContainerRequestFilter {
 
         //Check if token is valid
         String token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
-        TokenRegistry.TokenInfo tokenInfo = TokenRegistry.getInstance().getTokenInfo(token);
+        TokenRegistry.TokenInfo tokenInfo = tokenRegistry.getTokenInfo(token);
 
         if (tokenInfo == null) {
             abortWithUnauthorized(requestContext);
             return;
         }
+
+        tokenInfo.resetLastDateTime();
 
         //Replace the SecurityContext
         SecurityContext currentSecurityContext = requestContext.getSecurityContext();

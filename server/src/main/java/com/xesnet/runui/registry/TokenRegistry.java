@@ -1,4 +1,4 @@
-package com.xesnet.runui;
+package com.xesnet.runui.registry;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -11,12 +11,10 @@ import java.util.UUID;
  */
 public class TokenRegistry {
 
-    private static TokenRegistry instance;
-
     private final Integer tokenTimeout;
     private final Map<String, TokenInfo> loginToTokenInfos;
 
-    private TokenRegistry(Integer tokenTimeout) {
+    public TokenRegistry(Integer tokenTimeout) {
         this.tokenTimeout = tokenTimeout;
 
         this.loginToTokenInfos = new HashMap<>();
@@ -52,16 +50,6 @@ public class TokenRegistry {
     private synchronized void cleanExpiredToken() {
         LocalDateTime now = LocalDateTime.now();
         this.loginToTokenInfos.entrySet().removeIf(entry -> entry.getValue().getLastDateTime().plusSeconds(tokenTimeout).isBefore(now));
-    }
-
-    public static TokenRegistry init(Integer tokenTimeout) {
-        instance = new TokenRegistry(tokenTimeout);
-
-        return instance;
-    }
-
-    public static TokenRegistry getInstance() {
-        return instance;
     }
 
     public static class TokenInfo {

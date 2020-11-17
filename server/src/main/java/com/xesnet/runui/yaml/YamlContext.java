@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -22,19 +23,19 @@ public class YamlContext {
         objectMapper = new ObjectMapper(new YAMLFactory());
     }
 
-    public <T> T read(String file, Class<T> clazz) {
+    public synchronized <T> T read(String file, Class<T> clazz) throws YamlContextException {
         Path path = configPath.resolve(file);
 
         try {
             String data = Files.readString(path);
-
+            
             return objectMapper.readValue(data, clazz);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (IOException e) {
+            throw new YamlContextException(e);
         }
     }
 
-    public <T> T read(String file, TypeReference<T> valueTypeRef) {
+    public synchronized <T> T read(String file, TypeReference<T> valueTypeRef) throws YamlContextException {
         Path path = configPath.resolve(file);
 
         try {
@@ -42,7 +43,26 @@ public class YamlContext {
 
             return objectMapper.readValue(data, valueTypeRef);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new YamlContextException(ex);
+        }
+    }
+
+    public static class YamlContextException extends Exception {
+
+        public YamlContextException() {
+            super();
+        }
+
+        public YamlContextException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public YamlContextException(String message) {
+            super(message);
+        }
+
+        public YamlContextException(Throwable cause) {
+            super(cause);
         }
     }
 }

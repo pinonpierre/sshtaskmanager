@@ -1,4 +1,4 @@
-package com.xesnet.runui;
+package com.xesnet.runui.server;
 
 import javax.ws.rs.NameBinding;
 import java.lang.annotation.Retention;

@@ -5,17 +5,8 @@ package com.xesnet.runui.model;
  */
 public class Config {
 
-    private String path = "/";
     private Integer port = 8080;
     private Integer tokenTimeout = 300;
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
 
     public Integer getPort() {
         return port;

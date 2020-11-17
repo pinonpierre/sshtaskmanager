@@ -16,28 +16,17 @@ public class Yaml {
     private static final String CONFIG_FILE = "config.yaml";
     private static final String USERS_FILE = "users.yaml";
 
-    private static Yaml instance;
-
     private final YamlContext yamlContext;
 
-    private Yaml(Path configPath) {
+    public Yaml(Path configPath) {
         yamlContext = new YamlContext(configPath);
     }
 
-    public static Yaml init(Path configPath) {
-        instance = new Yaml(configPath);
-        return instance;
-    }
-
-    public static Yaml getInstance() {
-        return instance;
-    }
-
-    public Config readConfig() {
+    public Config readConfig() throws YamlContext.YamlContextException {
         return yamlContext.read(Yaml.CONFIG_FILE, Config.class);
     }
 
-    public List<User> readUsers() {
+    public List<User> readUsers() throws YamlContext.YamlContextException {
         return yamlContext.read(Yaml.USERS_FILE, new TypeReference<List<User>>() {
 
         });
