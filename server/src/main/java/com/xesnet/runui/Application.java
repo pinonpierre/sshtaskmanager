@@ -81,10 +81,6 @@ public class Application {
         ServletContextHandler servletContextHandler = new ServletContextHandler();
         servletContextHandler.setContextPath("/api");
 
-        //        ServletHolder servletHolder = servletContextHandler.addServlet(ServletContainer.class, "/*");
-        //        servletHolder.setInitParameter("jersey.config.server.provider.packages", "com.xesnet.runui.ws");
-        //        servletHolder.setInitParameter("javax.ws.rs.Application", "com.xesnet.runui.ws.InjectApplication");
-
         servletContextHandler.addServlet(new ServletHolder(new ServletContainer(new WsApplication(appContext))), "/*");
 
         //UI
