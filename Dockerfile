@@ -7,6 +7,8 @@ FROM node:12-alpine as builder-ui
 COPY ui /builder/
 WORKDIR /builder/
 RUN yarn install
+RUN yarn tsc
+RUN CI=true yarn test
 RUN yarn build
 
 FROM openjdk:15-slim
