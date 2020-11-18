@@ -33,11 +33,10 @@ public class Application {
 
     private static final String CONFIG_DIRECTORY = "config";
 
-    //TODO: SSH (Password, Private Key, Password, Command, Interactive)
+    //TODO: UI Build + Integrate UI in the docker image
     //TODO: Interface (React? Other?)
     //TODO: UI: Button (Info + Action) => Form
-    //TODO: Build, Docker
-    //TODO: Include webapp in jar or put webapp directory next to the jar file?
+    //TODO: SSH (Password, Private Key, Password, Command, Interactive)
 
     public static void main(String[] args) {
         //Init Log
