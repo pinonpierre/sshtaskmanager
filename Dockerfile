@@ -3,8 +3,15 @@ COPY server ./builder/
 WORKDIR /builder/
 RUN mvn clean package -U
 
+FROM node:12-alpine as builder-ui
+COPY ui /builder/
+WORKDIR /builder/
+RUN yarn install
+RUN yarn build
+
 FROM openjdk:15-slim
 COPY --from=builder-server /builder/target/runui-*-shade.jar /app/runui.jar
+COPY --from=builder-ui /builder/build /app/www
 WORKDIR /app
 RUN mkdir config
 EXPOSE 8080

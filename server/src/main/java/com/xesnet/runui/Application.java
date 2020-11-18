@@ -32,9 +32,8 @@ public class Application {
     private static Logger LOG;
 
     private static final String CONFIG_DIRECTORY = "config";
+    private static final String WEBAPP_DIRECTORY = "www";
 
-    //TODO: UI Build + Integrate UI in the docker image
-    //TODO: Interface (React? Other?)
     //TODO: UI: Button (Info + Action) => Form
     //TODO: SSH (Password, Private Key, Password, Command, Interactive)
 
@@ -86,9 +85,12 @@ public class Application {
         servletContextHandler.addServlet(new ServletHolder(new ServletContainer(new WsApplication(appContext))), "/*");
 
         //UI
+        String webAppPath = getJarDir(Application.class) + File.separator + WEBAPP_DIRECTORY;
+
         WebAppContext mainWebAppContext = new WebAppContext();
         mainWebAppContext.setContextPath("/");
-        mainWebAppContext.setResourceBase(Application.class.getResource("/webapp").toString());
+        mainWebAppContext.setResourceBase(webAppPath);
+
         mainWebAppContext.setParentLoaderPriority(true);
 
         RewriteHandler rewriteHandler = new UIRewriteHandler(mainWebAppContext);
