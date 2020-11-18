@@ -1,11 +1,9 @@
 package com.xesnet.runui.yaml;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.xesnet.runui.model.Config;
-import com.xesnet.runui.model.User;
+import com.xesnet.runui.model.Users;
 
 import java.nio.file.Path;
-import java.util.List;
 
 
 /**
@@ -23,12 +21,10 @@ public class Yaml {
     }
 
     public Config readConfig() throws YamlContext.YamlContextException {
-        return yamlContext.read(Yaml.CONFIG_FILE, Config.class);
+        return yamlContext.read(Yaml.CONFIG_FILE, Config.class, true);
     }
 
-    public List<User> readUsers() throws YamlContext.YamlContextException {
-        return yamlContext.read(Yaml.USERS_FILE, new TypeReference<List<User>>() {
-
-        });
+    public Users readUsers() throws YamlContext.YamlContextException {
+        return yamlContext.read(Yaml.USERS_FILE, Users.class, true);
     }
 }

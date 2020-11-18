@@ -1,9 +1,10 @@
 package com.xesnet.runui.ws.endpoint;
 
-import com.xesnet.runui.registry.TokenRegistry;
 import com.xesnet.runui.context.AppContext;
 import com.xesnet.runui.model.Token;
 import com.xesnet.runui.model.User;
+import com.xesnet.runui.model.Users;
+import com.xesnet.runui.registry.TokenRegistry;
 import com.xesnet.runui.yaml.YamlContext;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +16,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 
 @Path("token")
@@ -25,9 +25,9 @@ public class WsToken {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Token login(@Context AppContext appContext, @Context HttpServletRequest request, Token token) throws YamlContext.YamlContextException {
-        List<User> users = appContext.getYaml().readUsers();
+        Users users = appContext.getYaml().readUsers();
 
-        User user = users.stream().filter(u -> u.getLogin().equals(token.getLogin()) && u.getPassword().equals(token.getPassword())).findFirst().orElse(null);
+        User user = users.getUsers().stream().filter(u -> u.getLogin().equals(token.getLogin()) && u.getPassword().equals(token.getPassword())).findFirst().orElse(null);
         if (user == null) {
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         } else {

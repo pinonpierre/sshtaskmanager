@@ -1,10 +1,10 @@
 package com.xesnet.runui.yaml;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -24,26 +24,44 @@ public class YamlContext {
     }
 
     public synchronized <T> T read(String file, Class<T> clazz) throws YamlContextException {
+        return read(file, clazz, false);
+    }
+
+    public synchronized <T> T read(String file, Class<T> clazz, boolean createIfNotExists) throws YamlContextException {
         Path path = configPath.resolve(file);
+
+        if (!Files.exists(path)) {
+            try {
+                T object = clazz.getDeclaredConstructor().newInstance();
+
+                if (createIfNotExists) {
+                    write(file, object);
+                }
+
+                return object;
+            } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                throw new YamlContextException(e);
+            }
+        }
 
         try {
             String data = Files.readString(path);
-            
+
             return objectMapper.readValue(data, clazz);
-        } catch (IOException e) {
-            throw new YamlContextException(e);
+        } catch (Exception ex) {
+            throw new YamlContextException(ex);
         }
     }
 
-    public synchronized <T> T read(String file, TypeReference<T> valueTypeRef) throws YamlContextException {
+    public synchronized <T> void write(String file, T object) throws YamlContextException {
         Path path = configPath.resolve(file);
 
         try {
-            String data = Files.readString(path);
+            String data = objectMapper.writeValueAsString(object);
 
-            return objectMapper.readValue(data, valueTypeRef);
-        } catch (Exception ex) {
-            throw new YamlContextException(ex);
+            Files.writeString(path, data);
+        } catch (IOException e) {
+            throw new YamlContextException(e);
         }
     }
 

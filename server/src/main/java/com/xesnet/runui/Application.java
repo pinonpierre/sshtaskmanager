@@ -38,7 +38,6 @@ public class Application {
     //TODO: UI: Button (Info + Action) => Form
     //TODO: Build, Docker
     //TODO: Include webapp in jar or put webapp directory next to the jar file?
-    //TODO: Create config files if not exists
 
     public static void main(String[] args) {
         //Init Log
@@ -62,6 +61,9 @@ public class Application {
 
     private Application(String path) throws YamlContext.YamlContextException, ApplicationProperties.ApplicationPropertiesException {
         Yaml yaml = new Yaml(Paths.get(path));
+
+        //Allows to create file if not exists
+        yaml.readUsers();
 
         Config config = yaml.readConfig();
         TokenRegistry tokenRegistry = new TokenRegistry(config.getTokenTimeout());
