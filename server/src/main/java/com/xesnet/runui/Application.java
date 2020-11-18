@@ -38,6 +38,7 @@ public class Application {
     //TODO: UI: Button (Info + Action) => Form
     //TODO: Build, Docker
     //TODO: Include webapp in jar or put webapp directory next to the jar file?
+    //TODO: Create config files if not exists
 
     public static void main(String[] args) {
         //Init Log
@@ -45,7 +46,7 @@ public class Application {
         System.setProperty("org.eclipse.jetty.LEVEL", "WARN");
 
         System.setProperty("java.util.logging.ConsoleHandler.level", "INFO");
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s%6$s%n");
         LOG = Logger.getLogger(Application.class.getName());
 
         String path = args.length > 0 ? args[0] : getJarDir(Application.class) + File.separator + CONFIG_DIRECTORY;
