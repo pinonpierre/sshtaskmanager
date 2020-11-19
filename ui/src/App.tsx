@@ -1,8 +1,19 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import logo from './logo.svg';
 import './App.css';
+import {Api} from "./ws/Api";
 
 function App() {
+
+  useEffect(() => {
+    const api = new Api("http://localhost:8080/api");
+    api.login("admin", "admin").then(() => {
+      api.wsVersion().get().then(value => console.log(value));
+    });
+
+  });
+
+
   return (
     <div className="App">
       <header className="App-header">
