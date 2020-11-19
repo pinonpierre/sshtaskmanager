@@ -18,8 +18,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 
-@Path("token")
-public class WsToken {
+@Path("tokens")
+public class WsTokens {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -35,7 +35,7 @@ public class WsToken {
 
             Token responseToken = new Token();
             responseToken.setLogin(token.getLogin());
-            responseToken.setToken(tokenInfo.getToken());
+            responseToken.setId(tokenInfo.getId());
 
             return responseToken;
         }

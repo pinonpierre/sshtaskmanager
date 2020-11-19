@@ -23,9 +23,9 @@ public class TokenRegistry {
     public synchronized TokenInfo login(String login) {
         cleanExpiredToken();
 
-        String token = UUID.randomUUID().toString();
-        TokenInfo tokenInfo = new TokenInfo(token, login);
-        loginToTokenInfos.put(token, tokenInfo);
+        String id = UUID.randomUUID().toString();
+        TokenInfo tokenInfo = new TokenInfo(id, login);
+        loginToTokenInfos.put(id, tokenInfo);
 
         return tokenInfo;
     }
@@ -34,13 +34,13 @@ public class TokenRegistry {
         loginToTokenInfos.remove(token);
     }
 
-    public synchronized TokenInfo getTokenInfo(String token) {
-        TokenInfo tokenInfo = loginToTokenInfos.get(token);
+    public synchronized TokenInfo getTokenInfo(String id) {
+        TokenInfo tokenInfo = loginToTokenInfos.get(id);
         if (tokenInfo != null) {
             if (tokenInfo.getLastDateTime().plusSeconds(tokenTimeout).isAfter(LocalDateTime.now())) {
                 return tokenInfo;
             } else {
-                loginToTokenInfos.remove(token);
+                loginToTokenInfos.remove(id);
             }
         }
 
@@ -54,19 +54,19 @@ public class TokenRegistry {
 
     public static class TokenInfo {
 
-        private final String token;
+        private final String id;
         private final String login;
         private LocalDateTime lastDateTime;
 
-        public TokenInfo(String token, String login) {
-            this.token = token;
+        public TokenInfo(String id, String login) {
+            this.id = id;
             this.login = login;
 
             resetLastDateTime();
         }
 
-        public String getToken() {
-            return token;
+        public String getId() {
+            return id;
         }
 
         public String getLogin() {

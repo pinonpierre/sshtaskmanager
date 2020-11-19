@@ -6,7 +6,7 @@
     <option name="PROGRAM_PARAMETERS" value="C:\Users\ppinon\Source\runui.git\server\config" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.xesnet.runui.ws.*" />
+        <option name="PATTERN" value="com.xesnet.runui.ws.filter.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

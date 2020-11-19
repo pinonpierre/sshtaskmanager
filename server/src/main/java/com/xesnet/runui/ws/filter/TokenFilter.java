@@ -1,4 +1,4 @@
-package com.xesnet.runui.ws;
+package com.xesnet.runui.ws.filter;
 
 import com.xesnet.runui.server.Secured;
 import com.xesnet.runui.registry.TokenRegistry;

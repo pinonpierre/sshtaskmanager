@@ -5,9 +5,17 @@ package com.xesnet.runui.model;
  */
 public class Token {
 
+    private String id;
     private String login;
     private String password;
-    private String token;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getLogin() {
         return login;
@@ -23,14 +31,6 @@ public class Token {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 }
 
