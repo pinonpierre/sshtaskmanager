@@ -62,3 +62,7 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 ### Mobx
 
 `yarn add mobx mobx-react`
+
+### Emotion
+
+`yarn add @emotion/react @emotion/styled`

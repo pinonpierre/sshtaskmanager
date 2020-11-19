@@ -5,18 +5,31 @@ import {LoginPage} from "./page/LoginPage";
 import {IndexPage} from "./page/IndexPage";
 import {AppStoreContextProvider, useAppStore} from "./context/AppStoreContext";
 import {observer} from "mobx-react";
+import {css, Global} from "@emotion/react";
+import styled from "@emotion/styled";
 
 const App = () => {
     //TODO: Cleanup default useless React files...
     //TODO: UI: Button (Info + Action) => Form
-    //TODO: Styled components
+    //TODO: Title
 
     return <AppStoreContextProvider>
-        <Routes/>
+        <AppLayout/>
     </AppStoreContextProvider>;
 }
 
-const Routes = observer(() => {
+const globalStyles = css`
+    html, html > body, html > body > div#root {
+        height: 100%;
+    }
+`;
+
+const MainDiv = styled.div`
+    background-color: lightblue;
+    height: 100%;
+`;
+
+const AppLayout = observer(() => {
     const appStore = useAppStore();
     const [ready, setReady] = useState(false);
     const [version, setVersion] = useState<string>();
@@ -32,23 +45,27 @@ const Routes = observer(() => {
         }
     }, [appStore, isLogged]);
 
-    return ready ? <BrowserRouter>
-        <div>
-            <Switch>
-                {appStore.isLogged()
-                    ? <>
-                        <Route exact path="/" component={IndexPage}/>
-                        <Redirect exact to={"/"}/>
-                    </>
-                    : <>
-                        <Route exact path="/login" component={LoginPage}/>
-                        <Redirect exact to={"/login"}/>
-                    </>
-                }
-            </Switch>
-            {version && <span>{version}</span>}
-        </div>
-    </BrowserRouter> : null;
+    return <>
+        <Global styles={globalStyles}/>
+
+        <MainDiv>
+            {ready && <BrowserRouter>
+                <Switch>
+                    {appStore.isLogged()
+                        ? <>
+                            <Route exact path="/" component={IndexPage}/>
+                            <Redirect exact to={"/"}/>
+                        </>
+                        : <>
+                            <Route exact path="/login" component={LoginPage}/>
+                            <Redirect exact to={"/login"}/>
+                        </>
+                    }
+                </Switch>
+                {version && <span>{version}</span>}
+            </BrowserRouter>}
+        </MainDiv>
+    </>;
 });
 
 export default App;
