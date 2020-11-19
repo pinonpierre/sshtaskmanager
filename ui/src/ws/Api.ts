@@ -127,7 +127,6 @@ export class Api {
     }
 
     async login(loginName: string, password: string): Promise<Token> {
-        console.log("login");
         //If already logged, logout before
         if (this.context.hasTokenId()) {
             this.logout();
