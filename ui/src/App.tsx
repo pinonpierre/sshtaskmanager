@@ -1,47 +1,54 @@
-import React, {useEffect} from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react';
 import './App.css';
-import {Api} from "./ws/Api";
-import {ConfigUtils} from "./utils/ConfigUtils";
+import {BrowserRouter, Redirect, Route, Switch} from 'react-router-dom';
+import {LoginPage} from "./page/LoginPage";
+import {IndexPage} from "./page/IndexPage";
+import {AppStoreContextProvider, useAppStore} from "./context/AppStoreContext";
+import {observer} from "mobx-react";
 
-async function init() {
-    const configuration = await ConfigUtils.readConfiguration();
-    const api = new Api(configuration.apiUrl);
-    await api.login("admin", "admin");
-
-    const version = await api.wsVersion().get();
-    console.log(version);
-}
-
-function App() {
-
-    //TODO: Create Context to store api
-    //TODO: Router + rights
+const App = () => {
     //TODO: Cleanup default useless React files...
     //TODO: UI: Button (Info + Action) => Form
+    //TODO: Styled components
+
+    return <AppStoreContextProvider>
+        <Routes/>
+    </AppStoreContextProvider>;
+}
+
+const Routes = observer(() => {
+    const appStore = useAppStore();
+    const [ready, setReady] = useState(false);
+    const [version, setVersion] = useState<string>();
 
     useEffect(() => {
-        init();
-    });
+        appStore.init().then(value => setReady(true));
+    }, [appStore]);
 
-    return (
-        <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo"/>
-                <p>
-                    Edit <code>src/App.tsx</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
+    const isLogged = appStore.isLogged();
+    useEffect(() => {
+        if (appStore.isLogged()) {
+            appStore.getApi().wsVersion().get().then(version => setVersion(version.versionTimestamp));
+        }
+    }, [appStore, isLogged]);
+
+    return ready ? <BrowserRouter>
+        <div>
+            <Switch>
+                {appStore.isLogged()
+                    ? <>
+                        <Route exact path="/" component={IndexPage}/>
+                        <Redirect exact to={"/"}/>
+                    </>
+                    : <>
+                        <Route exact path="/login" component={LoginPage}/>
+                        <Redirect exact to={"/login"}/>
+                    </>
+                }
+            </Switch>
+            {version && <span>{version}</span>}
         </div>
-    );
-}
+    </BrowserRouter> : null;
+});
 
 export default App;

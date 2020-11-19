@@ -47,4 +47,18 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 
 ## Project Creation
 
+### Base
+
 `yarn create react-app my-app --template typescript`
+
+### Router
+
+`yarn add react-router-dom @types/react-router-dom`
+
+### Material ui
+
+`yarn add @material-ui/core`
+
+### Mobx
+
+`yarn add mobx mobx-react`
