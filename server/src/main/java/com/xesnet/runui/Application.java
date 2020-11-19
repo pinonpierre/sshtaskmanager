@@ -34,7 +34,6 @@ public class Application {
     private static final String CONFIG_DIRECTORY = "config";
     private static final String WEBAPP_DIRECTORY = "www";
 
-    //TODO: UI: Button (Info + Action) => Form
     //TODO: SSH (Password, Private Key, Password, Command, Interactive)
 
     public static void main(String[] args) {

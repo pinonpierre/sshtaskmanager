@@ -16,5 +16,6 @@ public class ResponseFilter implements ContainerResponseFilter {
         MultivaluedMap<String, Object> headers = responseContext.getHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
         headers.add("Access-Control-Allow-Headers", "content-type, authorization");
+        headers.add("Access-Control-Allow-Methods","PUT, POST, GET, DELETE, PATCH, OPTIONS");
     }
 }
