@@ -1,9 +1,11 @@
 import {Api} from "../ws/Api";
 import {action, makeObservable, observable} from "mobx";
-import {Configuration, ConfigUtils} from "../utils/ConfigUtils";
+import {Configuration, ConfigurationUtils} from "../utils/ConfigurationUtils";
 import assert from "assert";
 
 export class AppStore {
+    private static readonly LOCAL_STORAGE_TOKEN_KEY = "token";
+
     constructor() {
         makeObservable(this);
     }
@@ -14,7 +16,7 @@ export class AppStore {
     private configuration?: Configuration;
 
     init = async () => {
-        this.configuration = await ConfigUtils.readConfiguration();
+        this.configuration = await ConfigurationUtils.readConfiguration();
     }
 
     public getApi() {
@@ -32,18 +34,29 @@ export class AppStore {
         this.logout();
 
         const api = new Api(this.configuration!.apiUrl);
-        await api.login(loginName, password);
+        const token = await api.login(loginName, password);
 
         this.setApi(api);
+        localStorage.setItem(AppStore.LOCAL_STORAGE_TOKEN_KEY, token.id!);
     }
 
-    public async loginByTokenId(tokenId: string) {
+    public async tryRelogin() {
+        const tokenId = localStorage.getItem(AppStore.LOCAL_STORAGE_TOKEN_KEY);
+        if (tokenId === null) {
+            return false;
+        }
         this.logout();
 
         const api = new Api(this.configuration!.apiUrl);
-        await api?.loginByTokenId(tokenId);
+        try {
+            await api?.loginByTokenId(tokenId);
+        } catch (e) {
+            localStorage.removeItem(AppStore.LOCAL_STORAGE_TOKEN_KEY);
+            return false;
+        }
 
         this.setApi(api);
+        return true;
     }
 
     public isLogged() {
@@ -54,6 +67,7 @@ export class AppStore {
         if (this.api) {
             this.api?.logout();
             this.setApi();
+            localStorage.removeItem(AppStore.LOCAL_STORAGE_TOKEN_KEY);
         }
     }
 }

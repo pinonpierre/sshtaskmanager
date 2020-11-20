@@ -11,7 +11,7 @@ const DEFAULT_CONFIGURATION: Configuration = {
     apiUrl: window.location.origin + "/api"
 };
 
-export class ConfigUtils {
+export class ConfigurationUtils {
     static async readConfiguration(): Promise<Configuration> {
         try {
             const response = await fetch(CONFIG_FILE);
