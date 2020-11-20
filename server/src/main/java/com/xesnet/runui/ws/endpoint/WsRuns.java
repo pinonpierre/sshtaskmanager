@@ -20,10 +20,10 @@ import javax.ws.rs.core.Response;
 
 
 @Path("runs")
+@Secured
 public class WsRuns {
 
     @POST
-    @Secured
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Run postRun(@Context AppContext appContext, Run run) throws YamlContext.YamlContextException {
@@ -42,7 +42,6 @@ public class WsRuns {
 
     @GET
     @Path("{id}")
-    @Secured
     @Produces(MediaType.APPLICATION_JSON)
     public Run getRun(@Context AppContext appContext, @PathParam("id") String id) {
         Run run = appContext.getRunExecutor().getRun(id);
