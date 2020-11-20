@@ -9,7 +9,9 @@ import com.xesnet.runui.yaml.Yaml;
 import com.xesnet.runui.yaml.YamlContext;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -98,6 +100,7 @@ public class Application {
         WebAppContext mainWebAppContext = new WebAppContext();
         mainWebAppContext.setContextPath("/");
         mainWebAppContext.setResourceBase(webAppPath);
+        mainWebAppContext.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
 
         mainWebAppContext.setParentLoaderPriority(true);
 
@@ -120,11 +123,24 @@ public class Application {
         Server server = new Server(port);
         server.setHandler(handlers);
 
+        //Don't Send Server Version
+        Optional.of(server.getConnectors())
+                .map(connectors -> connectors[0])
+                .map(Connector::getConnectionFactories)
+                .map(connectionFactories -> connectionFactories.stream()
+                            .filter(connector -> connector instanceof HttpConnectionFactory)
+                            .findFirst()
+                            .orElse(null)
+                )
+                .map(connector -> (HttpConnectionFactory) connector)
+                .ifPresent(httpConnectionFactory -> httpConnectionFactory.getHttpConfiguration().setSendServerVersion(false));
+
         Optional<ServerConnector> optionalServerConnector = Optional.of(server.getConnectors())
                 .map(connectors -> connectors[0])
                 .filter(connector -> connector instanceof ServerConnector)
                 .map(connector -> (ServerConnector) connector);
 
+        //Set Host if necessary
         optionalServerConnector.ifPresent(serverConnector -> {
             if (host != null) {
                 serverConnector.setHost(host);
@@ -134,9 +150,10 @@ public class Application {
         try {
             server.start();
 
-            optionalServerConnector.ifPresent(serverConnector -> {
-                LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort());
-            });
+            //Log Server Info
+            optionalServerConnector.ifPresent(serverConnector ->
+                LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort())
+            );
 
             server.join();
         } catch (Exception e) {
