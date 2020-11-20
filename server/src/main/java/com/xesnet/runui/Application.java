@@ -82,10 +82,10 @@ public class Application {
         appContext.setRunExecutor(commandExecutor);
         appContext.setApplicationProperties(applicationProperties);
 
-        startServer(config.getPort(), appContext);
+        startServer(config.getHost(), config.getPort(), appContext);
     }
 
-    private void startServer(Integer port, AppContext appContext) {
+    private void startServer(String host, Integer port, AppContext appContext) {
         //API
         ServletContextHandler servletContextHandler = new ServletContextHandler();
         servletContextHandler.setContextPath("/api");
@@ -120,16 +120,23 @@ public class Application {
         Server server = new Server(port);
         server.setHandler(handlers);
 
+        Optional<ServerConnector> optionalServerConnector = Optional.of(server.getConnectors())
+                .map(connectors -> connectors[0])
+                .filter(connector -> connector instanceof ServerConnector)
+                .map(connector -> (ServerConnector) connector);
+
+        optionalServerConnector.ifPresent(serverConnector -> {
+            if (host != null) {
+                serverConnector.setHost(host);
+            }
+        });
+
         try {
             server.start();
 
-            Optional.of(server.getConnectors())
-                    .map(connectors -> connectors[0])
-                    .filter(connector -> connector instanceof ServerConnector)
-                    .map(connector -> (ServerConnector) connector)
-                    .ifPresent(serverConnector -> {
-                        LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort());
-                    });
+            optionalServerConnector.ifPresent(serverConnector -> {
+                LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort());
+            });
 
             server.join();
         } catch (Exception e) {
