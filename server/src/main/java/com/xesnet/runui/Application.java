@@ -34,7 +34,9 @@ public class Application {
     private static final String CONFIG_DIRECTORY = "config";
     private static final String WEBAPP_DIRECTORY = "www";
 
-    //TODO: SSH (Password, Private Key, Password, Command, Interactive)
+    //TODO: SSH Auth by Public Key
+    //TODO: Filtered SSH return
+    //TODO: Insert webapp in the jar
 
     public static void main(String[] args) {
         //Init Log
@@ -63,14 +65,20 @@ public class Application {
         yaml.readUsers();
 
         Config config = yaml.readConfig();
+
         TokenRegistry tokenRegistry = new TokenRegistry(config.getTokenTimeout());
+
+        RunExecutor commandExecutor = new RunExecutor(config.getNumberOfThreads(), config.getOutputPollInterval(), config.getRunCleanInterval(), config.getRunRetention());
+        commandExecutor.init();
 
         ApplicationProperties applicationProperties = new ApplicationProperties();
         applicationProperties.init();
 
         AppContext appContext = new AppContext();
+        appContext.setConfig(config);
         appContext.setYaml(yaml);
         appContext.setTokenRegistry(tokenRegistry);
+        appContext.setRunExecutor(commandExecutor);
         appContext.setApplicationProperties(applicationProperties);
 
         startServer(config.getPort(), appContext);
