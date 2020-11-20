@@ -37,6 +37,7 @@ public class Application {
     //TODO: SSH Auth by Public Key
     //TODO: Filtered SSH return
     //TODO: Insert webapp in the jar
+    //TODO: Allows to make a sequence of runs based on return code / output
 
     public static void main(String[] args) {
         //Init Log
