@@ -1,8 +1,3 @@
-FROM maven:3.6.3-openjdk-15 as builder-server
-COPY server ./builder/
-WORKDIR /builder/
-RUN mvn clean package -U
-
 FROM node:12-alpine as builder-ui
 COPY ui /builder/
 WORKDIR /builder/
@@ -11,9 +6,14 @@ RUN yarn tsc
 RUN CI=true yarn test
 RUN yarn build
 
+FROM maven:3.6.3-openjdk-15 as builder-server
+COPY server ./builder/
+COPY --from=builder-ui /builder/build /builder/src/main/resources/webapp
+WORKDIR /builder/
+RUN mvn clean package -U
+
 FROM openjdk:15-slim
 COPY --from=builder-server /builder/target/runui-*-shade.jar /app/runui.jar
-COPY --from=builder-ui /builder/build /app/www
 WORKDIR /app
 RUN mkdir config
 EXPOSE 8080

@@ -34,11 +34,10 @@ public class Application {
     private static Logger LOG;
 
     private static final String CONFIG_DIRECTORY = "config";
-    private static final String WEBAPP_DIRECTORY = "www";
+    private static final String WEBAPP_DIRECTORY = "/webapp";
 
     //TODO: SSH Auth by Public Key
     //TODO: Filtered SSH return
-    //TODO: Insert webapp in the jar
     //TODO: Allows to make a sequence of runs based on return code / output
 
     public static void main(String[] args) {
@@ -95,11 +94,9 @@ public class Application {
         servletContextHandler.addServlet(new ServletHolder(new ServletContainer(new WsApplication(appContext))), "/*");
 
         //UI
-        String webAppPath = getJarDir(Application.class) + File.separator + WEBAPP_DIRECTORY;
-
         WebAppContext mainWebAppContext = new WebAppContext();
         mainWebAppContext.setContextPath("/");
-        mainWebAppContext.setResourceBase(webAppPath);
+        mainWebAppContext.setResourceBase(Application.class.getResource(WEBAPP_DIRECTORY).toString());
         mainWebAppContext.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
 
         mainWebAppContext.setParentLoaderPriority(true);
@@ -128,9 +125,9 @@ public class Application {
                 .map(connectors -> connectors[0])
                 .map(Connector::getConnectionFactories)
                 .map(connectionFactories -> connectionFactories.stream()
-                            .filter(connector -> connector instanceof HttpConnectionFactory)
-                            .findFirst()
-                            .orElse(null)
+                        .filter(connector -> connector instanceof HttpConnectionFactory)
+                        .findFirst()
+                        .orElse(null)
                 )
                 .map(connector -> (HttpConnectionFactory) connector)
                 .ifPresent(httpConnectionFactory -> httpConnectionFactory.getHttpConfiguration().setSendServerVersion(false));
@@ -152,7 +149,7 @@ public class Application {
 
             //Log Server Info
             optionalServerConnector.ifPresent(serverConnector ->
-                LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort())
+                    LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort())
             );
 
             server.join();
