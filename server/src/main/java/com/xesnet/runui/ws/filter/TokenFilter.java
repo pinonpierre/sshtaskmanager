@@ -1,7 +1,7 @@
 package com.xesnet.runui.ws.filter;
 
-import com.xesnet.runui.server.Secured;
 import com.xesnet.runui.registry.TokenRegistry;
+import com.xesnet.runui.server.Secured;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -19,6 +19,8 @@ import java.security.Principal;
 @Secured
 @Priority(Priorities.AUTHENTICATION)
 public class TokenFilter implements ContainerRequestFilter {
+
+    public static final String REQUEST_PROPERTY_TOKEN_INFO = "tokenInfo";
 
     private static final String AUTHENTICATION_SCHEME = "Token";
 
@@ -48,6 +50,9 @@ public class TokenFilter implements ContainerRequestFilter {
         }
 
         tokenInfo.resetLastDateTime();
+
+        //Store TokenInfo in the RequestContext
+        requestContext.setProperty(REQUEST_PROPERTY_TOKEN_INFO, tokenInfo);
 
         //Replace the SecurityContext
         SecurityContext currentSecurityContext = requestContext.getSecurityContext();

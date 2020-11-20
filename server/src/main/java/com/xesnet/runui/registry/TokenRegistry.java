@@ -30,8 +30,8 @@ public class TokenRegistry {
         return tokenInfo;
     }
 
-    public synchronized void logout(String token) {
-        loginToTokenInfos.remove(token);
+    public synchronized void logout(String id) {
+        loginToTokenInfos.remove(id);
     }
 
     public synchronized TokenInfo getTokenInfo(String id) {
