@@ -13,8 +13,8 @@ WORKDIR /builder/
 RUN mvn clean package -U
 
 FROM openjdk:15-alpine
-COPY --from=builder-server /builder/target/runui-*-shade.jar /app/runui.jar
+COPY --from=builder-server /builder/target/sshtaskmanager-*-shade.jar /app/sshtaskmanager.jar
 WORKDIR /app
 RUN mkdir config
 EXPOSE 8080
-CMD java -jar /app/runui.jar
+CMD java -jar /app/sshtaskmanager.jar

@@ -4,17 +4,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.xesnet</groupId>
-    <artifactId>runui</artifactId>
+    <artifactId>sshtaskmanager</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <description>Run UI</description>
+    <description>SSH Task Manager</description>
     <organization>
         <name>Xesnet</name>
         <url>https://www.xesnet.com</url>
     </organization>
 
     <scm>
-        <connection>scm:git:https://home.xesnet.com:30002/xes/runui.git</connection>
+        <connection>scm:git:https://home.xesnet.com:30002/xes/sshtaskmanager.git</connection>
     </scm>
 
     <dependencies>
@@ -155,7 +155,7 @@
     </build>
 
     <properties>
-        <main.class>com.xesnet.runui.Application</main.class>
+        <main.class>com.xesnet.sshtaskmanager.Application</main.class>
 
         <version.timestamp>${project.version}.${maven.build.timestamp}</version.timestamp>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>

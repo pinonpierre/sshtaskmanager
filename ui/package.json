@@ -1,5 +1,5 @@
 {
-  "name": "runui",
+  "name": "sshtaskmanager",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
