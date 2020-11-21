@@ -1,6 +1,7 @@
 package com.xesnet.sshtaskmanager.yaml;
 
 import com.xesnet.sshtaskmanager.model.Config;
+import com.xesnet.sshtaskmanager.model.Sequences;
 import com.xesnet.sshtaskmanager.model.SshRuns;
 import com.xesnet.sshtaskmanager.model.SshServers;
 import com.xesnet.sshtaskmanager.model.Users;
@@ -17,6 +18,7 @@ public class Yaml {
     private static final String USERS_FILE = "users.yaml";
     private static final String SERVERS_FILE = "servers.yaml";
     private static final String RUNS_FILES = "runs.yaml";
+    private static final String SEQUENCES_FILES = "sequences.yaml";
 
     private final YamlContext yamlContext;
 
@@ -38,5 +40,9 @@ public class Yaml {
 
     public SshRuns readRuns() throws YamlContext.YamlContextException {
         return yamlContext.read(Yaml.RUNS_FILES, SshRuns.class);
+    }
+
+    public Sequences readSequences() throws YamlContext.YamlContextException {
+        return yamlContext.read(Yaml.SEQUENCES_FILES, Sequences.class);
     }
 }
