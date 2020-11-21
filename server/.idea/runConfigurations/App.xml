@@ -2,7 +2,7 @@
   <configuration default="false" name="App" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="11" />
     <option name="MAIN_CLASS_NAME" value="com.xesnet.sshtaskmanager.Application" />
-    <module name="sshtaskmanager" />
+    <module name="server" />
     <option name="PROGRAM_PARAMETERS" value="C:\Users\ppinon\Source\sshtaskmanager.git\server\config" />
     <extension name="coverage">
       <pattern>

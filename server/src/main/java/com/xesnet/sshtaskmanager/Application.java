@@ -21,10 +21,13 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static com.xesnet.sshtaskmanager.util.PathUtil.getJarDir;
 
@@ -94,31 +97,36 @@ public class Application {
         servletContextHandler.addServlet(new ServletHolder(new ServletContainer(new WsApplication(appContext))), "/*");
 
         //UI
-        WebAppContext mainWebAppContext = new WebAppContext();
-        mainWebAppContext.setContextPath("/");
-        mainWebAppContext.setResourceBase(Application.class.getResource(WEBAPP_DIRECTORY).toString());
-        mainWebAppContext.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+        RewriteHandler rewriteHandler = null;
+        URL webAppUrl = Application.class.getResource(WEBAPP_DIRECTORY);
+        if (webAppUrl != null) {
+            WebAppContext mainWebAppContext = new WebAppContext();
+            mainWebAppContext.setContextPath("/");
+            mainWebAppContext.setResourceBase(webAppUrl.toString());
+            mainWebAppContext.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
 
-        mainWebAppContext.setParentLoaderPriority(true);
+            mainWebAppContext.setParentLoaderPriority(true);
 
-        RewriteHandler rewriteHandler = new UIRewriteHandler(mainWebAppContext);
-        rewriteHandler.setRewriteRequestURI(true);
-        rewriteHandler.setRewritePathInfo(false);
-        rewriteHandler.setOriginalPathAttribute("requestedPath");
-        rewriteHandler.setHandler(mainWebAppContext);
+            rewriteHandler = new UIRewriteHandler(mainWebAppContext);
+            rewriteHandler.setRewriteRequestURI(true);
+            rewriteHandler.setRewritePathInfo(false);
+            rewriteHandler.setOriginalPathAttribute("requestedPath");
+            rewriteHandler.setHandler(mainWebAppContext);
 
-        RewriteRegexRule rewriteRegexRule = new RewriteRegexRule();
-        rewriteRegexRule.setRegex(".*");
-        rewriteRegexRule.setReplacement("/index.html");
-        rewriteHandler.addRule(rewriteRegexRule);
+            RewriteRegexRule rewriteRegexRule = new RewriteRegexRule();
+            rewriteRegexRule.setRegex(".*");
+            rewriteRegexRule.setReplacement("/index.html");
+            rewriteHandler.addRule(rewriteRegexRule);
+        }
 
-        //Handler List
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[] { servletContextHandler, rewriteHandler });
+        //Handlers
+        Handler[] handlers = Stream.of(servletContextHandler, rewriteHandler)
+                .filter(Objects::nonNull)
+                .toArray(Handler[]::new);
 
         //Server
         Server server = new Server(port);
-        server.setHandler(handlers);
+        server.setHandler(new HandlerList(handlers));
 
         //Don't Send Server Version
         Optional.of(server.getConnectors())
