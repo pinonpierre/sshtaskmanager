@@ -91,7 +91,7 @@ public class Application {
         TokenRegistry tokenRegistry = new TokenRegistry(config.getTokenTimeout());
 
         //Init Run Manager
-        RunManager runManager = new RunManager(config.getRunNumberOfThreads(), config.getRunStatusPollInterval(), config.getRunTimeout(), config.getRunCleanInterval(), config.getRunRetention());
+        RunManager runManager = new RunManager(config.getRunManager());
         runManager.init();
 
         //Init Application Properties

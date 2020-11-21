@@ -4,9 +4,10 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.xesnet.sshtaskmanager.model.Run;
-import com.xesnet.sshtaskmanager.model.RunState;
 import com.xesnet.sshtaskmanager.model.Process;
+import com.xesnet.sshtaskmanager.model.Run;
+import com.xesnet.sshtaskmanager.model.RunManagerConfig;
+import com.xesnet.sshtaskmanager.model.RunState;
 import com.xesnet.sshtaskmanager.model.Server;
 
 import java.io.ByteArrayOutputStream;
@@ -30,27 +31,19 @@ public class RunManager {
 
     private ScheduledExecutorService executor;
 
-    private final int numberOfThreads;
-    private final int statusPollInterval;
-    private final int cleanInterval;
-    private final int retention;
-    private final int timeout;
+    private final RunManagerConfig config;
 
     private HashSet<Run> runs;
 
-    public RunManager(int numberOfThreads, int statusPollInterval, int timeout, int cleanInterval, int retention) {
-        this.numberOfThreads = numberOfThreads;
-        this.statusPollInterval = statusPollInterval;
-        this.timeout = timeout;
-        this.cleanInterval = cleanInterval;
-        this.retention = retention;
+    public RunManager(RunManagerConfig config) {
+        this.config = config;
     }
 
     public void init() {
-        executor = Executors.newScheduledThreadPool(numberOfThreads);
+        executor = Executors.newScheduledThreadPool(config.getNumberOfThreads());
         this.runs = new HashSet<>();
 
-        executor.scheduleAtFixedRate(this::cleanRun, this.cleanInterval, this.cleanInterval, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::cleanRun, config.getCleanInterval(), config.getCleanInterval(), TimeUnit.SECONDS);
     }
 
     public Run execute(Process process, Server server, String login) {
@@ -62,7 +55,7 @@ public class RunManager {
         setRun(run);
         LOG.fine(MessageFormat.format("[RunManager] [{0}] Run \"{1}\" from Server \"{2}\" by User \"{3}\"", run.getState(), process.getName(), server.getName(), login));
 
-        LocalDateTime limit = LocalDateTime.now().plusSeconds(this.timeout);
+        LocalDateTime limit = LocalDateTime.now().plusSeconds(config.getTimeout());
 
         Runnable runnable = () -> {
             JSch jsch = new JSch();
@@ -99,7 +92,7 @@ public class RunManager {
                 boolean noTimeout = false;
                 while (!channel.isClosed() && (noTimeout = limit.isAfter(LocalDateTime.now()))) {
                     try {
-                        Thread.sleep(statusPollInterval);
+                        Thread.sleep(config.getStatusPollInterval());
                     } catch (InterruptedException e) {
                         //Do nothing
                     }
@@ -143,7 +136,7 @@ public class RunManager {
     }
 
     private synchronized void cleanRun() {
-        LocalDateTime limit = LocalDateTime.now().minusSeconds(this.retention);
+        LocalDateTime limit = LocalDateTime.now().minusSeconds(config.getRetention());
         int total = runs.size();
         runs.removeIf(run -> run.getLocalDateTime().isBefore(limit));
         int cleaned = total - runs.size();
