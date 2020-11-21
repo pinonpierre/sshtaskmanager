@@ -21,10 +21,14 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
 
 
 @Path("tokens")
 public class WsTokens {
+
+    private final Logger LOG = Logger.getLogger(WsTokens.class.getName());
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -34,6 +38,8 @@ public class WsTokens {
 
         User user = users.getUsers().stream().filter(u -> u.getLogin().equals(token.getLogin()) && u.getPassword().equals(token.getPassword())).findFirst().orElse(null);
         if (user == null) {
+            LOG.fine(MessageFormat.format("[TOKEN] Create Token from login \"{0}\" failed", token.getLogin()));
+
             throw new WebApplicationException(Response.Status.UNAUTHORIZED);
         } else {
             TokenRegistry.TokenInfo tokenInfo = appContext.getTokenRegistry().login(token.getLogin());
@@ -41,6 +47,8 @@ public class WsTokens {
             Token responseToken = new Token();
             responseToken.setLogin(token.getLogin());
             responseToken.setId(tokenInfo.getId());
+
+            LOG.fine(MessageFormat.format("[TOKEN] Create Token from login \"{0}\" succeed", token.getLogin()));
 
             return responseToken;
         }
@@ -56,6 +64,8 @@ public class WsTokens {
         responseToken.setLogin(tokenInfo.getLogin());
         responseToken.setId(tokenInfo.getId());
 
+        LOG.finer(MessageFormat.format("[TOKEN] Get Token of login \"{0}\"", tokenInfo.getLogin()));
+
         return responseToken;
     }
 
@@ -70,6 +80,8 @@ public class WsTokens {
         Token responseToken = new Token();
         responseToken.setLogin(tokenInfo.getLogin());
         responseToken.setId(tokenInfo.getId());
+
+        LOG.finer(MessageFormat.format("[TOKEN] Delete Token of login \"{0}\"", tokenInfo.getLogin()));
 
         return responseToken;
     }

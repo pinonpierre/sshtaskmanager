@@ -2,6 +2,7 @@ package com.xesnet.sshtaskmanager.server;
 
 import com.xesnet.sshtaskmanager.context.AppContext;
 import com.xesnet.sshtaskmanager.context.AppContextFactory;
+import com.xesnet.sshtaskmanager.ws.filter.RequestFilter;
 import com.xesnet.sshtaskmanager.ws.filter.ResponseFilter;
 import com.xesnet.sshtaskmanager.ws.filter.TokenFilter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -15,6 +16,7 @@ public class WsApplication extends ResourceConfig {
         AppContextFactory appContextFactory = new AppContextFactory(appContext);
 
         register(new AbstractBinder() {
+
             @Override
             protected void configure() {
                 bindFactory(appContextFactory)
@@ -23,6 +25,7 @@ public class WsApplication extends ResourceConfig {
             }
         });
         register(new TokenFilter(appContext.getTokenRegistry()));
+        register(new RequestFilter());
         register(new ResponseFilter());
         packages(true, "com.xesnet.sshtaskmanager.ws");
     }

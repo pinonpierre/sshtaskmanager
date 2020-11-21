@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class Run {
 
     private String id;
-    private String runName;
+    private String name;
     private String output;
     private Integer exitCode;
     private RunState state;
@@ -23,12 +23,12 @@ public class Run {
         this.id = id;
     }
 
-    public String getRunName() {
-        return runName;
+    public String getName() {
+        return name;
     }
 
-    public void setRunName(String runName) {
-        this.runName = runName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getOutput() {
@@ -71,7 +71,7 @@ public class Run {
     public Run clone() {
         Run runInfo = new Run();
         runInfo.setId(id);
-        runInfo.setRunName(runName);
+        runInfo.setName(name);
         runInfo.setOutput(output);
         runInfo.setExitCode(exitCode);
         runInfo.setState(state);

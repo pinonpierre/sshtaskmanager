@@ -3,7 +3,6 @@ package com.xesnet.sshtaskmanager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -38,7 +37,7 @@ public class ApplicationProperties {
             try {
                 inputStream.close();
             } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
+                //Do nothing
             }
         }
     }

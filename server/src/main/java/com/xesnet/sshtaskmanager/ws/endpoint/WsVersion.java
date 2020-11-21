@@ -1,9 +1,9 @@
 package com.xesnet.sshtaskmanager.ws.endpoint;
 
-import com.xesnet.sshtaskmanager.server.Secured;
+import com.xesnet.sshtaskmanager.ApplicationProperties;
 import com.xesnet.sshtaskmanager.context.AppContext;
 import com.xesnet.sshtaskmanager.model.Version;
-import com.xesnet.sshtaskmanager.ApplicationProperties;
+import com.xesnet.sshtaskmanager.server.Secured;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

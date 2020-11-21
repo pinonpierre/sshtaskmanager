@@ -11,6 +11,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
 
 
 /**
@@ -19,6 +21,8 @@ import java.security.Principal;
 @Secured
 @Priority(Priorities.AUTHENTICATION)
 public class TokenFilter implements ContainerRequestFilter {
+
+    private final Logger LOG = Logger.getLogger(TokenFilter.class.getName());
 
     public static final String REQUEST_PROPERTY_TOKEN_INFO = "tokenInfo";
 
@@ -81,6 +85,7 @@ public class TokenFilter implements ContainerRequestFilter {
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
+        LOG.warning(MessageFormat.format("[WS] Token rejected #{0} {1}", requestContext.getMethod(), requestContext.getUriInfo().getPath()));
         requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE, AUTHENTICATION_SCHEME).build());
     }
 }

@@ -8,5 +8,6 @@ public enum RunState {
     CONNECT,
     SUBMIT,
     SUCCESS,
-    FAILED
+    FAILED,
+    TIMEOUT
 }

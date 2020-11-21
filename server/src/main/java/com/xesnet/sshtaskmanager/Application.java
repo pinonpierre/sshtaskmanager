@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -34,7 +35,7 @@ import static com.xesnet.sshtaskmanager.util.PathUtil.getJarDir;
 
 public class Application {
 
-    private static Logger LOG;
+    private final static Logger LOG = Logger.getLogger(Application.class.getName());
 
     private static final String CONFIG_DIRECTORY = "config";
     private static final String WEBAPP_DIRECTORY = "/webapp";
@@ -42,24 +43,26 @@ public class Application {
     //TODO: SSH Auth by Public Key
     //TODO: Filtered SSH return
     //TODO: Allows to make a sequence of runs based on return code / output
+    //TODO: Command template (docker management, machine status)
+    //TODO: Buttons: Simple Run or sequence
+    //TODO: Button: Progression based on the critical path (Previous level numbers and max remaining level numbers)
+    //TODO: Buttons: States based on exec or on cmd?
 
     public static void main(String[] args) {
         //Init Log
         System.setProperty("org.eclipse.jetty.util.log.announce", "false");
         System.setProperty("org.eclipse.jetty.LEVEL", "WARN");
 
-        System.setProperty("java.util.logging.ConsoleHandler.level", "INFO");
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s%6$s%n");
-        LOG = Logger.getLogger(Application.class.getName());
 
         String path = args.length > 0 ? args[0] : getJarDir(Application.class) + File.separator + CONFIG_DIRECTORY;
 
-        LOG.info("Application start...");
+        LOG.info("[APP] Application start...");
 
         try {
             new Application(path);
         } catch (YamlContext.YamlContextException | ApplicationProperties.ApplicationPropertiesException e) {
-            LOG.log(Level.SEVERE, null, e);
+            LOG.log(Level.SEVERE, "[APP] Initialization failed", e);
         }
     }
 
@@ -71,21 +74,39 @@ public class Application {
 
         Config config = yaml.readConfig();
 
+        //Init Log
+        Level level = Level.parse(config.getLogLevel());
+        Logger rootLogger = Logger.getLogger(Application.class.getPackageName());
+        rootLogger.setLevel(level);
+
+        Optional.of(Logger.getLogger("").getHandlers())
+        .map(handlers -> handlers[0])
+        .filter(handler -> handler instanceof ConsoleHandler)
+        .map(ConsoleHandler.class::cast)
+        .ifPresent(consoleHandler -> consoleHandler.setLevel(level));
+
+        LOG.fine("[APP] Log Level: " + level.getName());
+
+        //Init TokenRegistry
         TokenRegistry tokenRegistry = new TokenRegistry(config.getTokenTimeout());
 
-        RunExecutor commandExecutor = new RunExecutor(config.getNumberOfThreads(), config.getOutputPollInterval(), config.getRunCleanInterval(), config.getRunRetention());
-        commandExecutor.init();
+        //Init Run Executor
+        RunExecutor runExecutor = new RunExecutor(config.getRunNumberOfThreads(), config.getRunStatusPollInterval(), config.getRunTimeout(), config.getRunCleanInterval(), config.getRunRetention());
+        runExecutor.init();
 
+        //Init Application Properties
         ApplicationProperties applicationProperties = new ApplicationProperties();
         applicationProperties.init();
 
+        //AppContext
         AppContext appContext = new AppContext();
         appContext.setConfig(config);
         appContext.setYaml(yaml);
         appContext.setTokenRegistry(tokenRegistry);
-        appContext.setRunExecutor(commandExecutor);
+        appContext.setRunExecutor(runExecutor);
         appContext.setApplicationProperties(applicationProperties);
 
+        //Start Server
         startServer(config.getHost(), config.getPort(), appContext);
     }
 
@@ -157,12 +178,12 @@ public class Application {
 
             //Log Server Info
             optionalServerConnector.ifPresent(serverConnector ->
-                    LOG.info("Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort())
+                    LOG.info("[APP] Server started: http://" + (serverConnector.getHost() == null ? "0.0.0.0" : serverConnector.getHost()) + ":" + serverConnector.getPort())
             );
 
             server.join();
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, null, e);
+            LOG.log(Level.SEVERE, "[APP] Sever start failed", e);
         } finally {
             server.destroy();
         }
