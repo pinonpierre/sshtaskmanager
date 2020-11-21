@@ -12,7 +12,7 @@ COPY --from=builder-ui /builder/build /builder/src/main/resources/webapp
 WORKDIR /builder/
 RUN mvn clean package -U
 
-FROM openjdk:15-slim
+FROM openjdk:15-alpine
 COPY --from=builder-server /builder/target/runui-*-shade.jar /app/runui.jar
 WORKDIR /app
 RUN mkdir config
