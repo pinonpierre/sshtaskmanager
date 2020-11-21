@@ -40,13 +40,13 @@ public class Application {
     private static final String CONFIG_DIRECTORY = "config";
     private static final String WEBAPP_DIRECTORY = "/webapp";
 
-    //TODO: SSH Auth by Public Key
     //TODO: Filtered SSH return
     //TODO: Allows to make a sequence of runs based on return code / output
     //TODO: Command template (docker management, machine status)
     //TODO: Buttons: Simple Run or sequence
     //TODO: Button: Progression based on the critical path (Previous level numbers and max remaining level numbers)
     //TODO: Buttons: States based on exec or on cmd?
+    //TODO: Put in cache the yaml files (Load at startup?)
 
     public static void main(String[] args) {
         //Init Log

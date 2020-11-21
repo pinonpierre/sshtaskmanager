@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  * @author Pierre PINON
  */
 public class RunExecutor {
+
     private final Logger LOG = Logger.getLogger(RunExecutor.class.getName());
 
     private ScheduledExecutorService executor;
@@ -66,11 +67,17 @@ public class RunExecutor {
         Runnable runnable = () -> {
             JSch jsch = new JSch();
             try {
+                if (sshServer.getPublicKey() != null && sshServer.getPrivateKey() != null) {
+                    jsch.addIdentity(null, sshServer.getPrivateKey().getBytes(), sshServer.getPublicKey().getBytes(), sshServer.getPassphrase() == null ? null : sshServer.getPassphrase().getBytes());
+                }
+
                 Session session = jsch.getSession(sshServer.getLogin(), sshServer.getHost(), sshServer.getPort());
                 java.util.Properties jschConfig = new java.util.Properties();
                 jschConfig.put("StrictHostKeyChecking", "no");
                 session.setConfig(jschConfig);
-                session.setPassword(sshServer.getPassword());
+                if (sshServer.getPassword() != null) {
+                    session.setPassword(sshServer.getPassword());
+                }
 
                 session.connect();
                 run.setState(RunState.CONNECT);
@@ -112,7 +119,7 @@ public class RunExecutor {
             } catch (JSchException e) {
                 run.setState(RunState.FAILED);
                 run.updateLocalDateTime();
-                LOG.log(Level.SEVERE, MessageFormat.format("[RunExecutor] [{0}] [{1}]}", run.getId(), run.getState()), e);
+                LOG.log(Level.SEVERE, MessageFormat.format("[RunExecutor] [{0}] [{1}]", run.getId(), run.getState()), e);
                 setRun(run);
             }
         };

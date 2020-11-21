@@ -10,13 +10,13 @@ public class Config {
 
     private String host;
     private Integer port = 8080;
-    private String logLevel = Level.WARNING.getName(); //OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL
-    private Integer tokenTimeout = 1800; //seconds
+    private String logLevel = Level.WARNING.getName();
+    private Integer tokenTimeout = 1800;
     private Integer runNumberOfThreads = 16;
-    private Integer runStatusPollInterval = 100; //milliseconds
-    private Integer runTimeout = 300; //seconds
-    private Integer runCleanInterval = 300; //seconds
-    private Integer runRetention = 1800; //seconds
+    private Integer runStatusPollInterval = 100;
+    private Integer runTimeout = 300;
+    private Integer runCleanInterval = 300;
+    private Integer runRetention = 1800;
 
     public String getHost() {
         return host;
