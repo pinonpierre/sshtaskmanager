@@ -1,7 +1,7 @@
 package com.xesnet.sshtaskmanager.context;
 
 import com.xesnet.sshtaskmanager.ApplicationProperties;
-import com.xesnet.sshtaskmanager.RunExecutor;
+import com.xesnet.sshtaskmanager.RunManager;
 import com.xesnet.sshtaskmanager.model.Config;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.yaml.Yaml;
@@ -13,7 +13,7 @@ public class AppContext {
     private Yaml yaml;
     private TokenRegistry tokenRegistry;
     private ApplicationProperties applicationProperties;
-    private RunExecutor runExecutor;
+    private RunManager runManager;
 
     public Config getConfig() {
         return config;
@@ -43,12 +43,12 @@ public class AppContext {
         return applicationProperties;
     }
 
-    public RunExecutor getRunExecutor() {
-        return runExecutor;
+    public RunManager getRunManager() {
+        return runManager;
     }
 
-    public void setRunExecutor(RunExecutor runExecutor) {
-        this.runExecutor = runExecutor;
+    public void setRunManager(RunManager runManager) {
+        this.runManager = runManager;
     }
 
     public void setApplicationProperties(ApplicationProperties applicationProperties) {

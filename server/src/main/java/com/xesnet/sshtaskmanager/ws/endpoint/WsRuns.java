@@ -42,14 +42,14 @@ public class WsRuns {
                 .findFirst()
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
-        return appContext.getRunExecutor().execute(process, server, tokenInfo.getLogin());
+        return appContext.getRunManager().execute(process, server, tokenInfo.getLogin());
     }
 
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Run getRun(@Context AppContext appContext, @PathParam("id") String id) {
-        Run run = appContext.getRunExecutor().getRun(id);
+        Run run = appContext.getRunManager().getRun(id);
 
         if (run == null) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);

@@ -24,9 +24,9 @@ import java.util.logging.Logger;
 /**
  * @author Pierre PINON
  */
-public class RunExecutor {
+public class RunManager {
 
-    private final Logger LOG = Logger.getLogger(RunExecutor.class.getName());
+    private final Logger LOG = Logger.getLogger(RunManager.class.getName());
 
     private ScheduledExecutorService executor;
 
@@ -38,7 +38,7 @@ public class RunExecutor {
 
     private HashSet<Run> runs;
 
-    public RunExecutor(int numberOfThreads, int statusPollInterval, int timeout, int cleanInterval, int retention) {
+    public RunManager(int numberOfThreads, int statusPollInterval, int timeout, int cleanInterval, int retention) {
         this.numberOfThreads = numberOfThreads;
         this.statusPollInterval = statusPollInterval;
         this.timeout = timeout;
@@ -60,7 +60,7 @@ public class RunExecutor {
         run.setState(RunState.INIT);
         run.updateLocalDateTime();
         setRun(run);
-        LOG.fine(MessageFormat.format("[RunExecutor] [{0}] Run \"{1}\" from Server \"{2}\" by User \"{3}\"", run.getState(), process.getName(), server.getName(), login));
+        LOG.fine(MessageFormat.format("[RunManager] [{0}] Run \"{1}\" from Server \"{2}\" by User \"{3}\"", run.getState(), process.getName(), server.getName(), login));
 
         LocalDateTime limit = LocalDateTime.now().plusSeconds(this.timeout);
 
@@ -82,7 +82,7 @@ public class RunExecutor {
                 session.connect();
                 run.setState(RunState.CONNECT);
                 setRun(run);
-                LOG.finer(MessageFormat.format("[RunExecutor] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", run.getId(), run.getState(), process.getName(), server.getName(), login));
+                LOG.finer(MessageFormat.format("[RunManager] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", run.getId(), run.getState(), process.getName(), server.getName(), login));
 
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
                 channel.setCommand(String.join(";", process.getCommands()));
@@ -94,7 +94,7 @@ public class RunExecutor {
                 run.setState(RunState.SUBMIT);
                 run.updateLocalDateTime();
                 setRun(run);
-                LOG.finer(MessageFormat.format("[RunExecutor] [{0}] [{1}]", run.getId(), run.getState()));
+                LOG.finer(MessageFormat.format("[RunManager] [{0}] [{1}]", run.getId(), run.getState()));
 
                 boolean noTimeout = false;
                 while (!channel.isClosed() && (noTimeout = limit.isAfter(LocalDateTime.now()))) {
@@ -112,14 +112,14 @@ public class RunExecutor {
                 run.setExitCode(channel.getExitStatus());
                 run.updateLocalDateTime();
                 setRun(run);
-                LOG.finer(MessageFormat.format("[RunExecutor] [{0}] [{1}]", run.getId(), run.getState()));
+                LOG.finer(MessageFormat.format("[RunManager] [{0}] [{1}]", run.getId(), run.getState()));
 
                 channel.disconnect();
                 session.disconnect();
             } catch (JSchException e) {
                 run.setState(RunState.FAILED);
                 run.updateLocalDateTime();
-                LOG.log(Level.SEVERE, MessageFormat.format("[RunExecutor] [{0}] [{1}]", run.getId(), run.getState()), e);
+                LOG.log(Level.SEVERE, MessageFormat.format("[RunManager] [{0}] [{1}]", run.getId(), run.getState()), e);
                 setRun(run);
             }
         };
@@ -148,7 +148,7 @@ public class RunExecutor {
         runs.removeIf(run -> run.getLocalDateTime().isBefore(limit));
         int cleaned = total - runs.size();
         if (cleaned != total) {
-            LOG.finer(MessageFormat.format("[RunExecutor] [Clean] {0}/{1} removed", cleaned, total));
+            LOG.finer(MessageFormat.format("[RunManager] [Clean] {0}/{1} removed", cleaned, total));
         }
     }
 }
