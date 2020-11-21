@@ -6,15 +6,15 @@ import java.util.List;
 /**
  * @author Pierre PINON
  */
-public class SshServers {
+public class Servers {
 
-    private List<SshServer> servers;
+    private List<Server> servers;
 
-    public List<SshServer> getServers() {
+    public List<Server> getServers() {
         return servers;
     }
 
-    public void setServers(List<SshServer> servers) {
+    public void setServers(List<Server> servers) {
         this.servers = servers;
     }
 }

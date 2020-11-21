@@ -2,6 +2,7 @@ package com.xesnet.sshtaskmanager;
 
 import com.xesnet.sshtaskmanager.context.AppContext;
 import com.xesnet.sshtaskmanager.model.Config;
+import com.xesnet.sshtaskmanager.model.Sequence;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.server.UIRewriteHandler;
 import com.xesnet.sshtaskmanager.server.WsApplication;
@@ -23,6 +24,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.ConsoleHandler;
@@ -97,6 +99,8 @@ public class Application {
         //Init Application Properties
         ApplicationProperties applicationProperties = new ApplicationProperties();
         applicationProperties.init();
+
+        List<Sequence> sequences = yaml.readSequences().getSequences();
 
         //AppContext
         AppContext appContext = new AppContext();

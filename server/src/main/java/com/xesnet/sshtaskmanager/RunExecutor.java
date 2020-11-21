@@ -6,8 +6,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.xesnet.sshtaskmanager.model.Run;
 import com.xesnet.sshtaskmanager.model.RunState;
-import com.xesnet.sshtaskmanager.model.SshRun;
-import com.xesnet.sshtaskmanager.model.SshServer;
+import com.xesnet.sshtaskmanager.model.Process;
+import com.xesnet.sshtaskmanager.model.Server;
 
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
@@ -53,39 +53,39 @@ public class RunExecutor {
         executor.scheduleAtFixedRate(this::cleanRun, this.cleanInterval, this.cleanInterval, TimeUnit.SECONDS);
     }
 
-    public Run execute(SshRun sshRun, SshServer sshServer, String login) {
+    public Run execute(Process process, Server server, String login) {
         Run run = new Run();
         run.setId(UUID.randomUUID().toString());
-        run.setName(sshRun.getName());
+        run.setName(process.getName());
         run.setState(RunState.INIT);
         run.updateLocalDateTime();
         setRun(run);
-        LOG.fine(MessageFormat.format("[RunExecutor] [{0}] Run \"{1}\" from Server \"{2}\" by User \"{3}\"", run.getState(), sshRun.getName(), sshServer.getName(), login));
+        LOG.fine(MessageFormat.format("[RunExecutor] [{0}] Run \"{1}\" from Server \"{2}\" by User \"{3}\"", run.getState(), process.getName(), server.getName(), login));
 
         LocalDateTime limit = LocalDateTime.now().plusSeconds(this.timeout);
 
         Runnable runnable = () -> {
             JSch jsch = new JSch();
             try {
-                if (sshServer.getPublicKey() != null && sshServer.getPrivateKey() != null) {
-                    jsch.addIdentity(null, sshServer.getPrivateKey().getBytes(), sshServer.getPublicKey().getBytes(), sshServer.getPassphrase() == null ? null : sshServer.getPassphrase().getBytes());
+                if (server.getPublicKey() != null && server.getPrivateKey() != null) {
+                    jsch.addIdentity(null, server.getPrivateKey().getBytes(), server.getPublicKey().getBytes(), server.getPassphrase() == null ? null : server.getPassphrase().getBytes());
                 }
 
-                Session session = jsch.getSession(sshServer.getLogin(), sshServer.getHost(), sshServer.getPort());
+                Session session = jsch.getSession(server.getLogin(), server.getHost(), server.getPort());
                 java.util.Properties jschConfig = new java.util.Properties();
                 jschConfig.put("StrictHostKeyChecking", "no");
                 session.setConfig(jschConfig);
-                if (sshServer.getPassword() != null) {
-                    session.setPassword(sshServer.getPassword());
+                if (server.getPassword() != null) {
+                    session.setPassword(server.getPassword());
                 }
 
                 session.connect();
                 run.setState(RunState.CONNECT);
                 setRun(run);
-                LOG.finer(MessageFormat.format("[RunExecutor] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", run.getId(), run.getState(), sshRun.getName(), sshServer.getName(), login));
+                LOG.finer(MessageFormat.format("[RunExecutor] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", run.getId(), run.getState(), process.getName(), server.getName(), login));
 
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
-                channel.setCommand(String.join(";", sshRun.getCommands()));
+                channel.setCommand(String.join(";", process.getCommands()));
 
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 channel.setOutputStream(outputStream);

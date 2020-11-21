@@ -3,7 +3,7 @@ package com.xesnet.sshtaskmanager.model;
 /**
  * @author Pierre PINON
  */
-public class SshServer {
+public class Server {
 
     private String name;
     private String host;

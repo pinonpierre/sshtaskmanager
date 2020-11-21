@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @author Pierre PINON
  */
-public class SshRun {
+public class Process {
 
     private String name;
     private String caption;

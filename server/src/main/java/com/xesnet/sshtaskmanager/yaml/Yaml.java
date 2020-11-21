@@ -2,8 +2,8 @@ package com.xesnet.sshtaskmanager.yaml;
 
 import com.xesnet.sshtaskmanager.model.Config;
 import com.xesnet.sshtaskmanager.model.Sequences;
-import com.xesnet.sshtaskmanager.model.SshRuns;
-import com.xesnet.sshtaskmanager.model.SshServers;
+import com.xesnet.sshtaskmanager.model.Processes;
+import com.xesnet.sshtaskmanager.model.Servers;
 import com.xesnet.sshtaskmanager.model.Users;
 
 import java.nio.file.Path;
@@ -17,7 +17,7 @@ public class Yaml {
     private static final String CONFIG_FILE = "config.yaml";
     private static final String USERS_FILE = "users.yaml";
     private static final String SERVERS_FILE = "servers.yaml";
-    private static final String RUNS_FILES = "runs.yaml";
+    private static final String PROCESSES_FILES = "processes.yaml";
     private static final String SEQUENCES_FILES = "sequences.yaml";
 
     private final YamlContext yamlContext;
@@ -34,12 +34,12 @@ public class Yaml {
         return yamlContext.read(Yaml.USERS_FILE, Users.class, true);
     }
 
-    public SshServers readServers() throws YamlContext.YamlContextException {
-        return yamlContext.read(Yaml.SERVERS_FILE, SshServers.class);
+    public Servers readServers() throws YamlContext.YamlContextException {
+        return yamlContext.read(Yaml.SERVERS_FILE, Servers.class);
     }
 
-    public SshRuns readRuns() throws YamlContext.YamlContextException {
-        return yamlContext.read(Yaml.RUNS_FILES, SshRuns.class);
+    public Processes readProcesses() throws YamlContext.YamlContextException {
+        return yamlContext.read(Yaml.PROCESSES_FILES, Processes.class);
     }
 
     public Sequences readSequences() throws YamlContext.YamlContextException {

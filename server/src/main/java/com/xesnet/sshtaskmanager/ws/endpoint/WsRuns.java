@@ -2,8 +2,8 @@ package com.xesnet.sshtaskmanager.ws.endpoint;
 
 import com.xesnet.sshtaskmanager.context.AppContext;
 import com.xesnet.sshtaskmanager.model.Run;
-import com.xesnet.sshtaskmanager.model.SshRun;
-import com.xesnet.sshtaskmanager.model.SshServer;
+import com.xesnet.sshtaskmanager.model.Process;
+import com.xesnet.sshtaskmanager.model.Server;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.server.Secured;
 import com.xesnet.sshtaskmanager.ws.filter.TokenFilter;
@@ -32,17 +32,17 @@ public class WsRuns {
     public Run postRun(@Context AppContext appContext, @Context ContainerRequestContext containerRequestContext, Run run) throws YamlContext.YamlContextException {
         TokenRegistry.TokenInfo tokenInfo = (TokenRegistry.TokenInfo) containerRequestContext.getProperty(TokenFilter.REQUEST_PROPERTY_TOKEN_INFO);
 
-        SshRun sshRun = appContext.getYaml().readRuns().getRuns().stream()
+        Process process = appContext.getYaml().readProcesses().getProcesses().stream()
                 .filter(sr -> sr.getName().equals(run.getName()))
                 .findFirst()
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
-        SshServer sshServer = appContext.getYaml().readServers().getServers().stream()
-                .filter(ss -> ss.getName().equals(sshRun.getServer()))
+        Server server = appContext.getYaml().readServers().getServers().stream()
+                .filter(ss -> ss.getName().equals(process.getServer()))
                 .findFirst()
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
-        return appContext.getRunExecutor().execute(sshRun, sshServer, tokenInfo.getLogin());
+        return appContext.getRunExecutor().execute(process, server, tokenInfo.getLogin());
     }
 
     @GET
