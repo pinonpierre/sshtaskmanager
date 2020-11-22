@@ -3,7 +3,6 @@ package com.xesnet.sshtaskmanager.ws.endpoint;
 import com.xesnet.sshtaskmanager.context.AppContext;
 import com.xesnet.sshtaskmanager.model.Token;
 import com.xesnet.sshtaskmanager.model.User;
-import com.xesnet.sshtaskmanager.model.Users;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.server.Secured;
 import com.xesnet.sshtaskmanager.ws.filter.TokenFilter;
@@ -34,9 +33,8 @@ public class WsTokens {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Token postToken(@Context AppContext appContext, Token token) throws YamlContext.YamlContextException {
-        Users users = appContext.getYaml().readUsers();
+        User user = appContext.getBackend().getUser(token.getLogin(), token.getPassword());
 
-        User user = users.getUsers().stream().filter(u -> u.getLogin().equals(token.getLogin()) && u.getPassword().equals(token.getPassword())).findFirst().orElse(null);
         if (user == null) {
             LOG.fine(MessageFormat.format("[TOKEN] Create Token from login \"{0}\" failed", token.getLogin()));
 

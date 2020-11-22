@@ -7,12 +7,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
  * @author Pierre PINON
  */
 public class YamlContext {
+    private final static Logger LOG = Logger.getLogger(YamlContext.class.getName());
 
     private final Path configPath;
     private final ObjectMapper objectMapper;
@@ -48,8 +52,9 @@ public class YamlContext {
             String data = Files.readString(path);
 
             return objectMapper.readValue(data, clazz);
-        } catch (Exception ex) {
-            throw new YamlContextException(ex);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, MessageFormat.format("[YAML] Failed to Read file \"{0}\"", file), e);
+            throw new YamlContextException(e);
         }
     }
 
@@ -61,6 +66,7 @@ public class YamlContext {
 
             Files.writeString(path, data);
         } catch (IOException e) {
+            LOG.log(Level.SEVERE, MessageFormat.format("[YAML] Failed to Write file \"{0}\"", file), e);
             throw new YamlContextException(e);
         }
     }

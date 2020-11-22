@@ -1,34 +1,24 @@
 package com.xesnet.sshtaskmanager.context;
 
 import com.xesnet.sshtaskmanager.ApplicationProperties;
+import com.xesnet.sshtaskmanager.Backend;
 import com.xesnet.sshtaskmanager.RunManager;
-import com.xesnet.sshtaskmanager.model.Config;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
-import com.xesnet.sshtaskmanager.yaml.Yaml;
 
 
 public class AppContext {
 
-    private Config config;
-    private Yaml yaml;
+    private Backend backend;
     private TokenRegistry tokenRegistry;
     private ApplicationProperties applicationProperties;
     private RunManager runManager;
 
-    public Config getConfig() {
-        return config;
+    public Backend getBackend() {
+        return backend;
     }
 
-    public void setConfig(Config config) {
-        this.config = config;
-    }
-
-    public Yaml getYaml() {
-        return yaml;
-    }
-
-    public void setYaml(Yaml yaml) {
-        this.yaml = yaml;
+    public void setBackend(Backend backend) {
+        this.backend = backend;
     }
 
     public TokenRegistry getTokenRegistry() {

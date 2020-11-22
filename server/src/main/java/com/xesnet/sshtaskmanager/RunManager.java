@@ -16,11 +16,8 @@ import com.xesnet.sshtaskmanager.model.Sequence;
 import com.xesnet.sshtaskmanager.model.SequenceRun;
 import com.xesnet.sshtaskmanager.model.SequenceRunState;
 import com.xesnet.sshtaskmanager.model.Server;
-import com.xesnet.sshtaskmanager.yaml.Yaml;
 import com.xesnet.sshtaskmanager.yaml.YamlContext;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -46,14 +43,14 @@ public class RunManager {
     private ScheduledExecutorService executor;
 
     private final RunManagerConfig config;
-    private final Yaml yaml;
+    private final Backend backend;
 
     private HashSet<ProcessRun> processRuns;
     private HashSet<SequenceRun> sequenceRuns;
 
-    public RunManager(RunManagerConfig config, Yaml yaml) {
+    public RunManager(RunManagerConfig config, Backend backend) {
         this.config = config;
-        this.yaml = yaml;
+        this.backend = backend;
     }
 
     public void init() {
@@ -75,12 +72,9 @@ public class RunManager {
         processRun.updateLocalDateTime();
         setProcessRun(processRun);
 
-        Server tempServer;
+        Server nonFinalServer;
         try {
-            tempServer = yaml.readServers().getServers().stream()
-                    .filter(ss -> ss.getName().equals(process.getServerName()))
-                    .findFirst()
-                    .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+            nonFinalServer = backend.getServer(process.getServerName());
         } catch (YamlContext.YamlContextException e) {
             processRun.setState(ProcessRunState.FAILED);
             processRun.updateLocalDateTime();
@@ -88,9 +82,9 @@ public class RunManager {
             setProcessRun(processRun);
             return new ProcessRunExecution(processRun, null);
         }
-        Server server = tempServer;
+        Server server = nonFinalServer;
 
-        LOG.fine(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), tempServer.getName(), login));
+        LOG.fine(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), nonFinalServer.getName(), login));
 
         LocalDateTime limit = LocalDateTime.now().plusSeconds(config.getTimeout());
 
@@ -202,10 +196,7 @@ public class RunManager {
             try {
                 while (job != null) {
                     Job finalJob = job;
-                    Process process = yaml.readProcesses().getProcesses().stream()
-                            .filter(p -> p.getName().equals(finalJob.getProcessName()))
-                            .findFirst()
-                            .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+                    Process process = backend.getProcess(finalJob.getProcessName());
 
                     ProcessRunExecution processRunExecution = execute(process, login);
                     ProcessRun processRun = processRunExecution.getProcessRun();
@@ -226,10 +217,10 @@ public class RunManager {
                     List<Condition> conditions = job.getConditions();
                     job = null;
                     if (conditions != null) {
-                        for (Condition condition: conditions) {
+                        for (Condition condition : conditions) {
                             if (condition.getType() == ConditionType.RETURN_CODE) {
                                 if ((condition.getOperator() == ConditionOperator.EQUAL && condition.getValue().equals(processRun.getExitCode().toString()))
-                                || (condition.getOperator() == ConditionOperator.NOT_EQUAL && !condition.getValue().equals(processRun.getExitCode().toString()))) {
+                                        || (condition.getOperator() == ConditionOperator.NOT_EQUAL && !condition.getValue().equals(processRun.getExitCode().toString()))) {
                                     LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] {1}={2} Then {3} => YES", sequenceRun.getId(), condition.getOperator(), condition.getValue(), condition.getThen().getName()));
                                     job = condition.getThen();
                                     break;

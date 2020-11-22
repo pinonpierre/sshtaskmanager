@@ -31,10 +31,11 @@ public class WsSequenceRuns {
     public SequenceRun postRun(@Context AppContext appContext, @Context ContainerRequestContext containerRequestContext, SequenceRun sequenceRun) throws YamlContext.YamlContextException {
         TokenRegistry.TokenInfo tokenInfo = (TokenRegistry.TokenInfo) containerRequestContext.getProperty(TokenFilter.REQUEST_PROPERTY_TOKEN_INFO);
 
-        Sequence sequence = appContext.getYaml().readSequences().getSequences().stream()
-                .filter(s -> s.getName().equals(sequenceRun.getName()))
-                .findFirst()
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        Sequence sequence = appContext.getBackend().getSequence(sequenceRun.getName());
+
+        if (sequence == null) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
 
         return appContext.getRunManager().execute(sequence, tokenInfo.getLogin());
     }

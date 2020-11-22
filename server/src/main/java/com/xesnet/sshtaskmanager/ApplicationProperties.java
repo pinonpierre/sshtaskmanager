@@ -36,7 +36,7 @@ public class ApplicationProperties {
         } finally {
             try {
                 inputStream.close();
-            } catch (IOException ex) {
+            } catch (IOException e) {
                 //Do nothing
             }
         }

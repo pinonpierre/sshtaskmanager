@@ -31,10 +31,11 @@ public class WsProcessRuns {
     public ProcessRun postRun(@Context AppContext appContext, @Context ContainerRequestContext containerRequestContext, ProcessRun processRun) throws YamlContext.YamlContextException {
         TokenRegistry.TokenInfo tokenInfo = (TokenRegistry.TokenInfo) containerRequestContext.getProperty(TokenFilter.REQUEST_PROPERTY_TOKEN_INFO);
 
-        Process process = appContext.getYaml().readProcesses().getProcesses().stream()
-                .filter(p -> p.getName().equals(processRun.getName()))
-                .findFirst()
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        Process process = appContext.getBackend().getProcess(processRun.getName());
+
+        if (process == null) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        };
 
         return appContext.getRunManager().execute(process, tokenInfo.getLogin()).getProcessRun();
     }

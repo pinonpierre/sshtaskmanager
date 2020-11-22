@@ -46,7 +46,6 @@ public class Application {
     //TODO: Button: Progression based on the critical path (Previous level numbers and max remaining level numbers)
     //TODO: Buttons: States based on exec or on cmd?
     //TODO: Put in cache the yaml files (Load at startup?)
-    //TODO: Create Backend
     //TODO: Condition sur ProcessStatus
     //TODO: Prevent multi run of Process / Sequence
 
@@ -69,11 +68,14 @@ public class Application {
     }
 
     private Application(String path) throws YamlContext.YamlContextException, ApplicationProperties.ApplicationPropertiesException {
+        //Init Yaml
         Yaml yaml = new Yaml(Paths.get(path));
 
-        //Allows to create file if not exists
-        yaml.readUsers();
+        //Init Backend
+        Backend backend = new Backend(yaml);
 
+        //Load Configuration
+        yaml.readUsers();//Allows to create file if not exists
         Config config = yaml.readConfig();
 
         //Init Log
@@ -82,10 +84,10 @@ public class Application {
         rootLogger.setLevel(level);
 
         Optional.of(Logger.getLogger("").getHandlers())
-        .map(handlers -> handlers[0])
-        .filter(handler -> handler instanceof ConsoleHandler)
-        .map(ConsoleHandler.class::cast)
-        .ifPresent(consoleHandler -> consoleHandler.setLevel(level));
+                .map(handlers -> handlers[0])
+                .filter(handler -> handler instanceof ConsoleHandler)
+                .map(ConsoleHandler.class::cast)
+                .ifPresent(consoleHandler -> consoleHandler.setLevel(level));
 
         LOG.fine("[APP] Log Level: " + level.getName());
 
@@ -93,7 +95,7 @@ public class Application {
         TokenRegistry tokenRegistry = new TokenRegistry(config.getTokenTimeout());
 
         //Init Run Manager
-        RunManager runManager = new RunManager(config.getRunManager(), yaml);
+        RunManager runManager = new RunManager(config.getRunManager(), backend);
         runManager.init();
 
         //Init Application Properties
@@ -102,8 +104,7 @@ public class Application {
 
         //AppContext
         AppContext appContext = new AppContext();
-        appContext.setConfig(config);
-        appContext.setYaml(yaml);
+        appContext.setBackend(backend);
         appContext.setTokenRegistry(tokenRegistry);
         appContext.setRunManager(runManager);
         appContext.setApplicationProperties(applicationProperties);
