@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 /**
  * @author Pierre PINON
  */
-public class Run {
+public class ProcessRun {
 
     private String id;
     private String name;
     private String output;
     private Integer exitCode;
-    private RunState state;
+    private ProcessRunState state;
     private LocalDateTime localDateTime;
 
     public String getId() {
@@ -47,11 +47,11 @@ public class Run {
         this.exitCode = exitCode;
     }
 
-    public RunState getState() {
+    public ProcessRunState getState() {
         return state;
     }
 
-    public void setState(RunState state) {
+    public void setState(ProcessRunState state) {
         this.state = state;
     }
 
@@ -68,16 +68,16 @@ public class Run {
     }
 
     @Override
-    public Run clone() {
-        Run runInfo = new Run();
-        runInfo.setId(id);
-        runInfo.setName(name);
-        runInfo.setOutput(output);
-        runInfo.setExitCode(exitCode);
-        runInfo.setState(state);
+    public ProcessRun clone() {
+        ProcessRun processRun = new ProcessRun();
+        processRun.setId(id);
+        processRun.setName(name);
+        processRun.setOutput(output);
+        processRun.setExitCode(exitCode);
+        processRun.setState(state);
 
-        runInfo.updateLocalDateTime();
+        processRun.updateLocalDateTime();
 
-        return runInfo;
+        return processRun;
     }
 }

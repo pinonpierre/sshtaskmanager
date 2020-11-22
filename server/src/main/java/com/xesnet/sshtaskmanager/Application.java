@@ -41,12 +41,13 @@ public class Application {
     private static final String WEBAPP_DIRECTORY = "/webapp";
 
     //TODO: Filtered SSH return
-    //TODO: Allows to make a sequence of runs based on return code / output
     //TODO: Command template (docker management, machine status)
     //TODO: Buttons: Simple Run or sequence
     //TODO: Button: Progression based on the critical path (Previous level numbers and max remaining level numbers)
     //TODO: Buttons: States based on exec or on cmd?
     //TODO: Put in cache the yaml files (Load at startup?)
+    //TODO: Create Backend
+    //TODO: Condition sur ProcessStatus
 
     public static void main(String[] args) {
         //Init Log
@@ -91,7 +92,7 @@ public class Application {
         TokenRegistry tokenRegistry = new TokenRegistry(config.getTokenTimeout());
 
         //Init Run Manager
-        RunManager runManager = new RunManager(config.getRunManager());
+        RunManager runManager = new RunManager(config.getRunManager(), yaml);
         runManager.init();
 
         //Init Application Properties

@@ -3,7 +3,7 @@ package com.xesnet.sshtaskmanager.model;
 /**
  * @author Pierre PINON
  */
-public enum RunState {
+public enum ProcessRunState {
     INIT,
     CONNECT,
     SUBMIT,

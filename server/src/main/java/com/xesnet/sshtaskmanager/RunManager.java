@@ -4,18 +4,32 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.xesnet.sshtaskmanager.model.Condition;
+import com.xesnet.sshtaskmanager.model.ConditionOperator;
+import com.xesnet.sshtaskmanager.model.ConditionType;
+import com.xesnet.sshtaskmanager.model.Job;
 import com.xesnet.sshtaskmanager.model.Process;
-import com.xesnet.sshtaskmanager.model.Run;
+import com.xesnet.sshtaskmanager.model.ProcessRun;
+import com.xesnet.sshtaskmanager.model.ProcessRunState;
 import com.xesnet.sshtaskmanager.model.RunManagerConfig;
-import com.xesnet.sshtaskmanager.model.RunState;
+import com.xesnet.sshtaskmanager.model.Sequence;
+import com.xesnet.sshtaskmanager.model.SequenceRun;
+import com.xesnet.sshtaskmanager.model.SequenceRunState;
 import com.xesnet.sshtaskmanager.model.Server;
+import com.xesnet.sshtaskmanager.yaml.Yaml;
+import com.xesnet.sshtaskmanager.yaml.YamlContext;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -32,28 +46,51 @@ public class RunManager {
     private ScheduledExecutorService executor;
 
     private final RunManagerConfig config;
+    private final Yaml yaml;
 
-    private HashSet<Run> runs;
+    private HashSet<ProcessRun> processRuns;
+    private HashSet<SequenceRun> sequenceRuns;
 
-    public RunManager(RunManagerConfig config) {
+    public RunManager(RunManagerConfig config, Yaml yaml) {
         this.config = config;
+        this.yaml = yaml;
     }
 
     public void init() {
         executor = Executors.newScheduledThreadPool(config.getNumberOfThreads());
-        this.runs = new HashSet<>();
+        this.processRuns = new HashSet<>();
+        this.sequenceRuns = new HashSet<>();
 
-        executor.scheduleAtFixedRate(this::cleanRun, config.getCleanInterval(), config.getCleanInterval(), TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(() -> {
+            cleanProcessRun();
+            cleanSequenceRun();
+        }, config.getCleanInterval(), config.getCleanInterval(), TimeUnit.SECONDS);
     }
 
-    public Run execute(Process process, Server server, String login) {
-        Run run = new Run();
-        run.setId(UUID.randomUUID().toString());
-        run.setName(process.getName());
-        run.setState(RunState.INIT);
-        run.updateLocalDateTime();
-        setRun(run);
-        LOG.fine(MessageFormat.format("[RunManager] [{0}] Run \"{1}\" from Server \"{2}\" by User \"{3}\"", run.getState(), process.getName(), server.getName(), login));
+    public ProcessRunExecution execute(Process process, String login) {
+        ProcessRun processRun = new ProcessRun();
+        processRun.setId(UUID.randomUUID().toString());
+        processRun.setName(process.getName());
+        processRun.setState(ProcessRunState.INIT);
+        processRun.updateLocalDateTime();
+        setProcessRun(processRun);
+
+        Server tempServer;
+        try {
+            tempServer = yaml.readServers().getServers().stream()
+                    .filter(ss -> ss.getName().equals(process.getServer()))
+                    .findFirst()
+                    .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        } catch (YamlContext.YamlContextException e) {
+            processRun.setState(ProcessRunState.FAILED);
+            processRun.updateLocalDateTime();
+            LOG.log(Level.SEVERE, MessageFormat.format("[RunManager] [Process] [{0}] [{1}]", processRun.getId(), processRun.getState()), e);
+            setProcessRun(processRun);
+            return new ProcessRunExecution(processRun, null);
+        }
+        Server server = tempServer;
+
+        LOG.fine(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), tempServer.getName(), login));
 
         LocalDateTime limit = LocalDateTime.now().plusSeconds(config.getTimeout());
 
@@ -73,9 +110,9 @@ public class RunManager {
                 }
 
                 session.connect();
-                run.setState(RunState.CONNECT);
-                setRun(run);
-                LOG.finer(MessageFormat.format("[RunManager] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", run.getId(), run.getState(), process.getName(), server.getName(), login));
+                processRun.setState(ProcessRunState.CONNECT);
+                setProcessRun(processRun);
+                LOG.finer(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), server.getName(), login));
 
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
                 channel.setCommand(String.join(";", process.getCommands()));
@@ -84,10 +121,10 @@ public class RunManager {
                 channel.setOutputStream(outputStream);
 
                 channel.connect();
-                run.setState(RunState.SUBMIT);
-                run.updateLocalDateTime();
-                setRun(run);
-                LOG.finer(MessageFormat.format("[RunManager] [{0}] [{1}]", run.getId(), run.getState()));
+                processRun.setState(ProcessRunState.SUBMIT);
+                processRun.updateLocalDateTime();
+                setProcessRun(processRun);
+                LOG.finer(MessageFormat.format("[RunManager] [Process] [{0}] [{1}]", processRun.getId(), processRun.getState()));
 
                 boolean noTimeout = false;
                 while (!channel.isClosed() && (noTimeout = limit.isAfter(LocalDateTime.now()))) {
@@ -99,49 +136,166 @@ public class RunManager {
                 }
                 String responseString = new String(outputStream.toByteArray());
 
-                RunState newState = noTimeout ? RunState.SUCCESS : RunState.TIMEOUT;
-                run.setState(newState);
-                run.setOutput(responseString);
-                run.setExitCode(channel.getExitStatus());
-                run.updateLocalDateTime();
-                setRun(run);
-                LOG.finer(MessageFormat.format("[RunManager] [{0}] [{1}]", run.getId(), run.getState()));
+                ProcessRunState newState = noTimeout ? ProcessRunState.SUCCESS : ProcessRunState.TIMEOUT;
+                processRun.setState(newState);
+                processRun.setOutput(responseString);
+                processRun.setExitCode(channel.getExitStatus());
+                processRun.updateLocalDateTime();
+                setProcessRun(processRun);
+                LOG.finer(MessageFormat.format("[RunManager] [Process] [{0}] [{1}]", processRun.getId(), processRun.getState()));
 
                 channel.disconnect();
                 session.disconnect();
             } catch (JSchException e) {
-                run.setState(RunState.FAILED);
-                run.updateLocalDateTime();
-                LOG.log(Level.SEVERE, MessageFormat.format("[RunManager] [{0}] [{1}]", run.getId(), run.getState()), e);
-                setRun(run);
+                processRun.setState(ProcessRunState.FAILED);
+                processRun.updateLocalDateTime();
+                LOG.log(Level.SEVERE, MessageFormat.format("[RunManager] [Process] [{0}] [{1}]", processRun.getId(), processRun.getState()), e);
+                setProcessRun(processRun);
             }
+        };
+
+        Future<?> future = executor.submit(runnable);
+
+        return new ProcessRunExecution(processRun, future);
+    }
+
+    public synchronized ProcessRun getProcessRun(String id) {
+        return processRuns.stream()
+                .filter(run -> run.getId().equals(id))
+                .findFirst()
+                .map(ProcessRun::clone)
+                .orElse(null);
+    }
+
+    private synchronized void setProcessRun(ProcessRun processRun) {
+        processRuns.removeIf(ci -> ci.getId().equals(processRun.getId()));
+        processRuns.add(processRun.clone());
+    }
+
+    private synchronized void cleanProcessRun() {
+        LocalDateTime limit = LocalDateTime.now().minusSeconds(config.getRetention());
+        int total = processRuns.size();
+        processRuns.removeIf(run -> run.getLocalDateTime().isBefore(limit));
+        int cleaned = total - processRuns.size();
+        if (cleaned != total) {
+            LOG.finer(MessageFormat.format("[RunManager] [Process] [Clean] {0}/{1} removed", cleaned, total));
+        }
+    }
+
+    public SequenceRun execute(Sequence sequence, String login) {
+        SequenceRun sequenceRun = new SequenceRun();
+        sequenceRun.setId(UUID.randomUUID().toString());
+        sequenceRun.setName(sequence.getName());
+        sequenceRun.setState(SequenceRunState.INIT);
+        sequenceRun.updateLocalDateTime();
+        setSequenceRun(sequenceRun);
+        LOG.fine(MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] Sequence \"{2}\" by User \"{3}\"", sequenceRun.getId(), sequenceRun.getState(), sequence.getName(), login));
+
+        Runnable runnable = () -> {
+            sequenceRun.setState(SequenceRunState.SUBMIT);
+            sequenceRun.updateLocalDateTime();
+            setSequenceRun(sequenceRun);
+            LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}]", sequenceRun.getId(), sequenceRun.getState()));
+
+            Job job = sequence.getJob();
+
+            try {
+                while (job != null) {
+                    Job finalJob = job;
+                    Process process = yaml.readProcesses().getProcesses().stream()
+                            .filter(p -> p.getName().equals(finalJob.getProcess()))
+                            .findFirst()
+                            .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+
+                    ProcessRunExecution processRunExecution = execute(process, login);
+                    Future<?> future = processRunExecution.getFuture();
+                    if (future != null) {
+                        future.get();
+                    }
+                    ProcessRun processRun = getProcessRun(processRunExecution.getProcessRun().getId());
+
+                    sequenceRun.addJob(job.getName());
+                    sequenceRun.setOutput(processRun.getOutput());
+                    sequenceRun.setExitCode(processRun.getExitCode());
+                    sequenceRun.updateLocalDateTime();
+                    setSequenceRun(sequenceRun);
+                    LOG.fine(MessageFormat.format("[RunManager] [Sequence] [{0}] Job \"{1}\" ({2})", sequenceRun.getId(), job.getName(), processRun.getId()));
+
+                    List<Condition> conditions = job.getConditions();
+                    job = null;
+                    if (conditions != null) {
+                        for (Condition condition: conditions) {
+                            if (condition.getType() == ConditionType.RETURN_CODE) {
+                                if ((condition.getOperator() == ConditionOperator.EQUAL && condition.getValue().equals(processRun.getExitCode().toString()))
+                                || (condition.getOperator() == ConditionOperator.NOT_EQUAL && !condition.getValue().equals(processRun.getExitCode().toString()))) {
+                                    LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] {1}={2} Then {3} => YES", sequenceRun.getId(), condition.getOperator(), condition.getValue(), condition.getThen().getName()));
+                                    job = condition.getThen();
+                                    break;
+                                } else {
+                                    LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] {1}={2} Then {3} => NO", sequenceRun.getId(), condition.getOperator(), condition.getValue(), condition.getThen().getName()));
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (YamlContext.YamlContextException | InterruptedException | ExecutionException e) {
+                sequenceRun.setState(SequenceRunState.ERROR);
+                sequenceRun.updateLocalDateTime();
+                setSequenceRun(sequenceRun);
+                LOG.log(Level.SEVERE, MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] > {2}", sequenceRun.getId(), sequenceRun.getState(), sequenceRun.getJobs() == null ? "" : String.join(" > ", sequenceRun.getJobs())));
+                return;
+            }
+
+            sequenceRun.setState(SequenceRunState.DONE);
+            sequenceRun.updateLocalDateTime();
+            setSequenceRun(sequenceRun);
+            LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] > {2}", sequenceRun.getId(), sequenceRun.getState(), sequenceRun.getJobs() == null ? "" : String.join(" > ", sequenceRun.getJobs())));
         };
 
         executor.submit(runnable);
 
-        return run;
+        return sequenceRun;
     }
 
-    public synchronized Run getRun(String id) {
-        return runs.stream()
+    public synchronized SequenceRun getSequenceRun(String id) {
+        return sequenceRuns.stream()
                 .filter(run -> run.getId().equals(id))
                 .findFirst()
-                .map(Run::clone)
+                .map(SequenceRun::clone)
                 .orElse(null);
     }
 
-    private synchronized void setRun(Run run) {
-        runs.removeIf(ci -> ci.getId().equals(run.getId()));
-        runs.add(run.clone());
+    private synchronized void setSequenceRun(SequenceRun sequenceRun) {
+        sequenceRuns.removeIf(ci -> ci.getId().equals(sequenceRun.getId()));
+        sequenceRuns.add(sequenceRun.clone());
     }
 
-    private synchronized void cleanRun() {
+    private synchronized void cleanSequenceRun() {
         LocalDateTime limit = LocalDateTime.now().minusSeconds(config.getRetention());
-        int total = runs.size();
-        runs.removeIf(run -> run.getLocalDateTime().isBefore(limit));
-        int cleaned = total - runs.size();
+        int total = sequenceRuns.size();
+        sequenceRuns.removeIf(run -> run.getLocalDateTime().isBefore(limit));
+        int cleaned = total - sequenceRuns.size();
         if (cleaned != total) {
-            LOG.finer(MessageFormat.format("[RunManager] [Clean] {0}/{1} removed", cleaned, total));
+            LOG.finer(MessageFormat.format("[RunManager] [Sequence] [Clean] {0}/{1} removed", cleaned, total));
+        }
+    }
+
+    public static class ProcessRunExecution {
+
+        private ProcessRun processRun;
+        private Future<?> future;
+
+        public ProcessRunExecution(ProcessRun processRun, Future<?> future) {
+            this.processRun = processRun;
+            this.future = future;
+        }
+
+        public ProcessRun getProcessRun() {
+            return processRun;
+        }
+
+        public Future<?> getFuture() {
+            return future;
         }
     }
 }

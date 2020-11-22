@@ -1,9 +1,8 @@
 package com.xesnet.sshtaskmanager.ws.endpoint;
 
 import com.xesnet.sshtaskmanager.context.AppContext;
-import com.xesnet.sshtaskmanager.model.Run;
 import com.xesnet.sshtaskmanager.model.Process;
-import com.xesnet.sshtaskmanager.model.Server;
+import com.xesnet.sshtaskmanager.model.ProcessRun;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.server.Secured;
 import com.xesnet.sshtaskmanager.ws.filter.TokenFilter;
@@ -22,39 +21,34 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 
-@Path("runs")
+@Path("processRuns")
 @Secured
-public class WsRuns {
+public class WsProcessRuns {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Run postRun(@Context AppContext appContext, @Context ContainerRequestContext containerRequestContext, Run run) throws YamlContext.YamlContextException {
+    public ProcessRun postRun(@Context AppContext appContext, @Context ContainerRequestContext containerRequestContext, ProcessRun processRun) throws YamlContext.YamlContextException {
         TokenRegistry.TokenInfo tokenInfo = (TokenRegistry.TokenInfo) containerRequestContext.getProperty(TokenFilter.REQUEST_PROPERTY_TOKEN_INFO);
 
         Process process = appContext.getYaml().readProcesses().getProcesses().stream()
-                .filter(sr -> sr.getName().equals(run.getName()))
+                .filter(p -> p.getName().equals(processRun.getName()))
                 .findFirst()
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
-        Server server = appContext.getYaml().readServers().getServers().stream()
-                .filter(ss -> ss.getName().equals(process.getServer()))
-                .findFirst()
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-
-        return appContext.getRunManager().execute(process, server, tokenInfo.getLogin());
+        return appContext.getRunManager().execute(process, tokenInfo.getLogin()).getProcessRun();
     }
 
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Run getRun(@Context AppContext appContext, @PathParam("id") String id) {
-        Run run = appContext.getRunManager().getRun(id);
+    public ProcessRun getRun(@Context AppContext appContext, @PathParam("id") String id) {
+        ProcessRun processRun = appContext.getRunManager().getProcessRun(id);
 
-        if (run == null) {
+        if (processRun == null) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
-        return run;
+        return processRun;
     }
 }
