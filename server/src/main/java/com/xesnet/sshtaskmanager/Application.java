@@ -5,7 +5,7 @@ import com.xesnet.sshtaskmanager.model.Config;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.server.UIRewriteHandler;
 import com.xesnet.sshtaskmanager.server.WsApplication;
-import com.xesnet.sshtaskmanager.yaml.Yaml;
+import com.xesnet.sshtaskmanager.yaml.YamlDao;
 import com.xesnet.sshtaskmanager.yaml.YamlContext;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
@@ -45,7 +45,6 @@ public class Application {
     //TODO: Buttons: Simple Run or sequence
     //TODO: Button: Progression based on the critical path (Previous level numbers and max remaining level numbers)
     //TODO: Buttons: States based on exec or on cmd?
-    //TODO: Put in cache the yaml files (Load at startup?)
     //TODO: Condition sur ProcessStatus
 
     public static void main(String[] args) {
@@ -67,15 +66,15 @@ public class Application {
     }
 
     private Application(String path) throws YamlContext.YamlContextException, ApplicationProperties.ApplicationPropertiesException {
-        //Init Yaml
-        Yaml yaml = new Yaml(Paths.get(path));
+        //Init YamlDao
+        YamlDao yamlDao = new YamlDao(Paths.get(path));
+        yamlDao.init();
 
         //Init Backend
-        Backend backend = new Backend(yaml);
+        Backend backend = new Backend(yamlDao);
 
         //Load Configuration
-        yaml.readUsers();//Allows to create file if not exists
-        Config config = yaml.readConfig();
+        Config config = yamlDao.readConfig();
 
         //Init Log
         Level level = Level.parse(config.getLogLevel());

@@ -186,7 +186,7 @@ public class RunManager {
         int total = processRuns.size();
         processRuns.removeIf(run -> run.getLocalDateTime().isBefore(limit));
         int cleaned = total - processRuns.size();
-        if (cleaned != total) {
+        if (cleaned != 0) {
             LOG.finer(MessageFormat.format("[RunManager] [Process] [Clean] {0}/{1} removed", cleaned, total));
         }
     }
@@ -299,7 +299,7 @@ public class RunManager {
         int total = sequenceRuns.size();
         sequenceRuns.removeIf(run -> run.getLocalDateTime().isBefore(limit));
         int cleaned = total - sequenceRuns.size();
-        if (cleaned != total) {
+        if (cleaned != 0) {
             LOG.finer(MessageFormat.format("[RunManager] [Sequence] [Clean] {0}/{1} removed", cleaned, total));
         }
     }
