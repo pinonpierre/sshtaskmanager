@@ -208,18 +208,20 @@ public class RunManager {
                             .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 
                     ProcessRunExecution processRunExecution = execute(process, login);
+                    ProcessRun processRun = processRunExecution.getProcessRun();
+                    LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] Job \"{1}\" ({2})", sequenceRun.getId(), job.getName(), processRun.getId()));
                     Future<?> future = processRunExecution.getFuture();
                     if (future != null) {
                         future.get();
                     }
-                    ProcessRun processRun = getProcessRun(processRunExecution.getProcessRun().getId());
+                    //Update
+                    processRun = getProcessRun(processRun.getId());
 
                     sequenceRun.addJob(job.getName());
                     sequenceRun.setOutput(processRun.getOutput());
                     sequenceRun.setExitCode(processRun.getExitCode());
                     sequenceRun.updateLocalDateTime();
                     setSequenceRun(sequenceRun);
-                    LOG.fine(MessageFormat.format("[RunManager] [Sequence] [{0}] Job \"{1}\" ({2})", sequenceRun.getId(), job.getName(), processRun.getId()));
 
                     List<Condition> conditions = job.getConditions();
                     job = null;
