@@ -12,6 +12,9 @@ public class PathUtil {
 
     private static final String CHARSET_UTF8 = "UTF-8";
 
+    private PathUtil() {
+    }
+
     /**
      * Get Jar location
      *

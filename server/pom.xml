@@ -18,6 +18,14 @@
     </scm>
 
     <dependencies>
+        <!-- Tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!--Jaxb-->
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -160,6 +168,7 @@
         <version.timestamp>${project.version}.${maven.build.timestamp}</version.timestamp>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
+        <junit.version>4.13.1</junit.version>
         <jaxb.version>2.3.1</jaxb.version>
         <jaxb-core.version>2.3.0.1</jaxb-core.version>
         <jetty.version>9.4.34.v20201102</jetty.version>

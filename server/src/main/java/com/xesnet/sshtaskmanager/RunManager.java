@@ -5,8 +5,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.xesnet.sshtaskmanager.model.Condition;
-import com.xesnet.sshtaskmanager.model.ConditionOperator;
-import com.xesnet.sshtaskmanager.model.ConditionType;
 import com.xesnet.sshtaskmanager.model.Job;
 import com.xesnet.sshtaskmanager.model.Process;
 import com.xesnet.sshtaskmanager.model.ProcessRun;
@@ -16,6 +14,7 @@ import com.xesnet.sshtaskmanager.model.Sequence;
 import com.xesnet.sshtaskmanager.model.SequenceRun;
 import com.xesnet.sshtaskmanager.model.SequenceRunState;
 import com.xesnet.sshtaskmanager.model.Server;
+import com.xesnet.sshtaskmanager.util.ConditionChecker;
 import com.xesnet.sshtaskmanager.yaml.YamlContext;
 
 import java.io.ByteArrayOutputStream;
@@ -242,15 +241,12 @@ public class RunManager {
                     job = null;
                     if (conditions != null) {
                         for (Condition condition : conditions) {
-                            if (condition.getType() == ConditionType.RETURN_CODE) {
-                                if ((condition.getOperator() == ConditionOperator.EQUAL && condition.getValue().equals(processRun.getExitCode().toString()))
-                                        || (condition.getOperator() == ConditionOperator.NOT_EQUAL && !condition.getValue().equals(processRun.getExitCode().toString()))) {
-                                    LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] {1}={2} Then {3} => YES", sequenceRun.getId(), condition.getOperator(), condition.getValue(), condition.getThen().getName()));
-                                    job = condition.getThen();
-                                    break;
-                                } else {
-                                    LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] {1}={2} Then {3} => NO", sequenceRun.getId(), condition.getOperator(), condition.getValue(), condition.getThen().getName()));
-                                }
+                            if (ConditionChecker.check(processRun, condition)) {
+                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if {1} {2} {3} then \"{4}\" => YES", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThen().getName()));
+                                job = condition.getThen();
+                                break;
+                            } else {
+                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if {1} {2} {3} then \"{4}\" => NO", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThen().getName()));
                             }
                         }
                     }
