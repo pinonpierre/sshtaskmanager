@@ -47,7 +47,6 @@ public class Application {
     //TODO: Buttons: States based on exec or on cmd?
     //TODO: Put in cache the yaml files (Load at startup?)
     //TODO: Condition sur ProcessStatus
-    //TODO: Prevent multi run of Process / Sequence
 
     public static void main(String[] args) {
         //Init Log

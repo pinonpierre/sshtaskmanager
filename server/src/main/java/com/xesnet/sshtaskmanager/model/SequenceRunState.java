@@ -6,6 +6,11 @@ package com.xesnet.sshtaskmanager.model;
 public enum SequenceRunState {
     INIT,
     SUBMIT,
-    DONE,
-    ERROR
+    SUCCESS,
+    FAILED,
+    NO_MULTIPLE_RUN;
+
+    public boolean isDone() {
+        return this == SUCCESS || this == FAILED || this == NO_MULTIPLE_RUN;
+    }
 }

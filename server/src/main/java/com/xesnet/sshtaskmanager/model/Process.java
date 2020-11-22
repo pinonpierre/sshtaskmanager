@@ -12,6 +12,7 @@ public class Process {
     private String caption;
     private String serverName;
     private List<String> commands;
+    private boolean multipleRun = false;
 
     public String getName() {
         return name;
@@ -43,5 +44,13 @@ public class Process {
 
     public void setCommands(List<String> commands) {
         this.commands = commands;
+    }
+
+    public boolean isMultipleRun() {
+        return multipleRun;
+    }
+
+    public void setMultipleRun(boolean multipleRun) {
+        this.multipleRun = multipleRun;
     }
 }

@@ -9,5 +9,10 @@ public enum ProcessRunState {
     SUBMIT,
     SUCCESS,
     FAILED,
-    TIMEOUT
+    TIMEOUT,
+    NO_MULTIPLE_RUN;
+
+    public boolean isDone() {
+        return this == SUCCESS || this == FAILED || this == TIMEOUT || this == NO_MULTIPLE_RUN;
+    }
 }

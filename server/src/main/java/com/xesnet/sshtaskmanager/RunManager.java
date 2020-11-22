@@ -84,6 +84,14 @@ public class RunManager {
         }
         Server server = nonFinalServer;
 
+        if (!process.isMultipleRun() && isAnotherProcessRun(processRun)) {
+            processRun.setState(ProcessRunState.NO_MULTIPLE_RUN);
+            processRun.updateLocalDateTime();
+            setProcessRun(processRun);
+            LOG.warning(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), nonFinalServer.getName(), login));
+            return new ProcessRunExecution(processRun, null);
+        }
+
         LOG.fine(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), nonFinalServer.getName(), login));
 
         LocalDateTime limit = LocalDateTime.now().plusSeconds(config.getTimeout());
@@ -153,6 +161,13 @@ public class RunManager {
         return new ProcessRunExecution(processRun, future);
     }
 
+    public synchronized boolean isAnotherProcessRun(ProcessRun processRun) {
+        return processRuns.stream()
+                .filter(run -> run.getName().equals(processRun.getName()))
+                .filter(run -> !run.getId().equals(processRun.getId()))
+                .anyMatch(run -> !run.getState().isDone());
+    }
+
     public synchronized ProcessRun getProcessRun(String id) {
         return processRuns.stream()
                 .filter(run -> run.getId().equals(id))
@@ -183,6 +198,15 @@ public class RunManager {
         sequenceRun.setState(SequenceRunState.INIT);
         sequenceRun.updateLocalDateTime();
         setSequenceRun(sequenceRun);
+
+        if (!sequence.isMultipleRun() && isAnotherSequenceRun(sequenceRun)) {
+            sequenceRun.setState(SequenceRunState.NO_MULTIPLE_RUN);
+            sequenceRun.updateLocalDateTime();
+            setSequenceRun(sequenceRun);
+            LOG.warning(MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] Sequence \"{2}\" by User \"{3}\"", sequenceRun.getId(), sequenceRun.getState(), sequence.getName(), login));
+            return sequenceRun;
+        }
+
         LOG.fine(MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] Sequence \"{2}\" by User \"{3}\"", sequenceRun.getId(), sequenceRun.getState(), sequence.getName(), login));
 
         Runnable runnable = () -> {
@@ -232,14 +256,14 @@ public class RunManager {
                     }
                 }
             } catch (YamlContext.YamlContextException | InterruptedException | ExecutionException e) {
-                sequenceRun.setState(SequenceRunState.ERROR);
+                sequenceRun.setState(SequenceRunState.FAILED);
                 sequenceRun.updateLocalDateTime();
                 setSequenceRun(sequenceRun);
                 LOG.log(Level.SEVERE, MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] > {2}", sequenceRun.getId(), sequenceRun.getState(), sequenceRun.getJobs() == null ? "" : String.join(" > ", sequenceRun.getJobs())));
                 return;
             }
 
-            sequenceRun.setState(SequenceRunState.DONE);
+            sequenceRun.setState(SequenceRunState.SUCCESS);
             sequenceRun.updateLocalDateTime();
             setSequenceRun(sequenceRun);
             LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [{1}] > {2}", sequenceRun.getId(), sequenceRun.getState(), sequenceRun.getJobs() == null ? "" : String.join(" > ", sequenceRun.getJobs())));
@@ -248,6 +272,13 @@ public class RunManager {
         executor.submit(runnable);
 
         return sequenceRun;
+    }
+
+    public synchronized boolean isAnotherSequenceRun(SequenceRun sequenceRun) {
+        return sequenceRuns.stream()
+                .filter(run -> run.getName().equals(sequenceRun.getName()))
+                .filter(run -> !run.getId().equals(sequenceRun.getId()))
+                .anyMatch(run -> !run.getState().isDone());
     }
 
     public synchronized SequenceRun getSequenceRun(String id) {
