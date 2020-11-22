@@ -9,7 +9,7 @@ import java.util.List;
 public class Job {
 
     private String name;
-    private String process;
+    private String processName;
     private List<Condition> conditions;
 
     public String getName() {
@@ -20,12 +20,12 @@ public class Job {
         this.name = name;
     }
 
-    public String getProcess() {
-        return process;
+    public String getProcessName() {
+        return processName;
     }
 
-    public void setProcess(String process) {
-        this.process = process;
+    public void setProcessName(String processName) {
+        this.processName = processName;
     }
 
     public List<Condition> getConditions() {

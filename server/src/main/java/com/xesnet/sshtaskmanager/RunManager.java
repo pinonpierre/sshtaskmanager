@@ -78,7 +78,7 @@ public class RunManager {
         Server tempServer;
         try {
             tempServer = yaml.readServers().getServers().stream()
-                    .filter(ss -> ss.getName().equals(process.getServer()))
+                    .filter(ss -> ss.getName().equals(process.getServerName()))
                     .findFirst()
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         } catch (YamlContext.YamlContextException e) {
@@ -203,7 +203,7 @@ public class RunManager {
                 while (job != null) {
                     Job finalJob = job;
                     Process process = yaml.readProcesses().getProcesses().stream()
-                            .filter(p -> p.getName().equals(finalJob.getProcess()))
+                            .filter(p -> p.getName().equals(finalJob.getProcessName()))
                             .findFirst()
                             .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
 

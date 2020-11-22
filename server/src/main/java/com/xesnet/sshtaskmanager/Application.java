@@ -48,6 +48,7 @@ public class Application {
     //TODO: Put in cache the yaml files (Load at startup?)
     //TODO: Create Backend
     //TODO: Condition sur ProcessStatus
+    //TODO: Prevent multi run of Process / Sequence
 
     public static void main(String[] args) {
         //Init Log

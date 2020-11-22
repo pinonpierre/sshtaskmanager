@@ -10,7 +10,7 @@ public class Process {
 
     private String name;
     private String caption;
-    private String server;
+    private String serverName;
     private List<String> commands;
 
     public String getName() {
@@ -29,12 +29,12 @@ public class Process {
         this.caption = caption;
     }
 
-    public String getServer() {
-        return server;
+    public String getServerName() {
+        return serverName;
     }
 
-    public void setServer(String server) {
-        this.server = server;
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     public List<String> getCommands() {
