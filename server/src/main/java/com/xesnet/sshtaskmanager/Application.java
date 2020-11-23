@@ -45,6 +45,10 @@ public class Application {
     //TODO: Buttons: Simple Run or sequence
     //TODO: Button: Progression based on the critical path (Previous level numbers and max remaining level numbers)
     //TODO: Buttons: States based on exec or on cmd?
+    //TODO: Publish Docker Image automatically with Github Action
+    //TODO: Improve Documentation about config files
+    //TODO: Condition Else
+    //TODO: Process/Sequence variables
 
     public static void main(String[] args) {
         //Init Log
