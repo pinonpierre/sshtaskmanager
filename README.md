@@ -2,11 +2,15 @@
 
 ## Create Image ##
 
-`docker build -t sshtaskmanager .`
+`docker build -t xesnet/sshtaskmanager .`
+
+## Pull Docker Image ##
+
+`docker pull xesnet/sshtaskmanager`
 
 ## Run a Container ##
 
-`docker run --name sshtaskmanager -p 8080:8080 -v "/opt/sshtaskmanager/config:/app/config" sshtaskmanager`
+`docker run --name sshtaskmanager -p 8080:8080 -v "/opt/sshtaskmanager/config:/app/config" xesnet/sshtaskmanager`
 
 ## Configuration ##
 
