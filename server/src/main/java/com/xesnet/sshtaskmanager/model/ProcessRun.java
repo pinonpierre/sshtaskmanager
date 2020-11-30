@@ -1,6 +1,7 @@
 package com.xesnet.sshtaskmanager.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -14,6 +15,7 @@ public class ProcessRun {
     private Integer exitCode;
     private ProcessRunState state;
     private LocalDateTime localDateTime;
+    private List<Variable> variables;
 
     public String getId() {
         return id;
@@ -67,6 +69,14 @@ public class ProcessRun {
         setLocalDateTime(LocalDateTime.now());
     }
 
+    public List<Variable> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<Variable> variables) {
+        this.variables = variables;
+    }
+
     @Override
     public ProcessRun clone() {
         ProcessRun processRun = new ProcessRun();
@@ -75,6 +85,7 @@ public class ProcessRun {
         processRun.setOutput(output);
         processRun.setExitCode(exitCode);
         processRun.setState(state);
+        processRun.setVariables(variables);
 
         processRun.updateLocalDateTime();
 

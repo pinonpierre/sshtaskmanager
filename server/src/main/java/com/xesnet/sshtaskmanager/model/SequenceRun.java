@@ -17,6 +17,7 @@ public class SequenceRun {
     private SequenceRunState state;
     private List<String> jobs;
     private LocalDateTime localDateTime;
+    private List<Variable> variables;
 
     public String getId() {
         return id;
@@ -85,6 +86,14 @@ public class SequenceRun {
         setLocalDateTime(LocalDateTime.now());
     }
 
+    public List<Variable> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<Variable> variables) {
+        this.variables = variables;
+    }
+
     @Override
     public SequenceRun clone() {
         SequenceRun sequenceRun = new SequenceRun();
@@ -94,6 +103,7 @@ public class SequenceRun {
         sequenceRun.setExitCode(exitCode);
         sequenceRun.setState(state);
         sequenceRun.setJobs(jobs == null ? null: new ArrayList<>(jobs));
+        sequenceRun.setVariables(variables == null ? null: new ArrayList<>(variables));
 
         sequenceRun.updateLocalDateTime();
 

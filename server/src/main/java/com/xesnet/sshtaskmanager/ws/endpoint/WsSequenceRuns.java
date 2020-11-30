@@ -3,6 +3,7 @@ package com.xesnet.sshtaskmanager.ws.endpoint;
 import com.xesnet.sshtaskmanager.context.AppContext;
 import com.xesnet.sshtaskmanager.model.Sequence;
 import com.xesnet.sshtaskmanager.model.SequenceRun;
+import com.xesnet.sshtaskmanager.model.Variable;
 import com.xesnet.sshtaskmanager.registry.TokenRegistry;
 import com.xesnet.sshtaskmanager.server.Secured;
 import com.xesnet.sshtaskmanager.ws.filter.TokenFilter;
@@ -19,6 +20,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 
 @Path("sequenceRuns")
@@ -32,12 +34,13 @@ public class WsSequenceRuns {
         TokenRegistry.TokenInfo tokenInfo = (TokenRegistry.TokenInfo) containerRequestContext.getProperty(TokenFilter.REQUEST_PROPERTY_TOKEN_INFO);
 
         Sequence sequence = appContext.getBackend().getSequence(sequenceRun.getName());
+        List<Variable> variables = sequenceRun.getVariables();
 
         if (sequence == null) {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
-        return appContext.getRunManager().execute(sequence, tokenInfo.getLogin());
+        return appContext.getRunManager().execute(sequence, tokenInfo.getLogin(), variables);
     }
 
     @GET

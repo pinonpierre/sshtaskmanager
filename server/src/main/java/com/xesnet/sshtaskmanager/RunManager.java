@@ -14,7 +14,9 @@ import com.xesnet.sshtaskmanager.model.Sequence;
 import com.xesnet.sshtaskmanager.model.SequenceRun;
 import com.xesnet.sshtaskmanager.model.SequenceRunState;
 import com.xesnet.sshtaskmanager.model.Server;
+import com.xesnet.sshtaskmanager.model.Variable;
 import com.xesnet.sshtaskmanager.util.ConditionChecker;
+import com.xesnet.sshtaskmanager.util.VariableResolver;
 import com.xesnet.sshtaskmanager.yaml.YamlContext;
 
 import java.io.ByteArrayOutputStream;
@@ -63,7 +65,7 @@ public class RunManager {
         }, config.getCleanInterval(), config.getCleanInterval(), TimeUnit.SECONDS);
     }
 
-    public ProcessRunExecution execute(Process process, String login) {
+    public ProcessRunExecution execute(Process process, String login, List<Variable> variables) {
         ProcessRun processRun = new ProcessRun();
         processRun.setId(UUID.randomUUID().toString());
         processRun.setName(process.getName());
@@ -116,7 +118,9 @@ public class RunManager {
                 LOG.finer(MessageFormat.format("[RunManager] [Process] [{0}] [{1}] Run \"{2}\" from Server \"{3}\" by User \"{4}\"", processRun.getId(), processRun.getState(), process.getName(), server.getName(), login));
 
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
-                channel.setCommand(String.join(";", process.getCommands()));
+
+                List<String> commands = (variables == null || variables.size() == 0) ? process.getCommands() : new VariableResolver(variables).substituteByValues(process.getCommands());
+                channel.setCommand(String.join(";", commands));
 
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 channel.setOutputStream(outputStream);
@@ -190,7 +194,7 @@ public class RunManager {
         }
     }
 
-    public SequenceRun execute(Sequence sequence, String login) {
+    public SequenceRun execute(Sequence sequence, String login, List<Variable> variables) {
         SequenceRun sequenceRun = new SequenceRun();
         sequenceRun.setId(UUID.randomUUID().toString());
         sequenceRun.setName(sequence.getName());
@@ -221,7 +225,7 @@ public class RunManager {
                     Job finalJob = job;
                     Process process = backend.getProcess(finalJob.getProcessName());
 
-                    ProcessRunExecution processRunExecution = execute(process, login);
+                    ProcessRunExecution processRunExecution = execute(process, login, variables);
                     ProcessRun processRun = processRunExecution.getProcessRun();
                     LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] Job \"{1}\" ({2})", sequenceRun.getId(), job.getName(), processRun.getId()));
                     Future<?> future = processRunExecution.getFuture();

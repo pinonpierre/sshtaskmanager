@@ -110,6 +110,13 @@
             <artifactId>jsch</artifactId>
             <version>${jsch.version}</version>
         </dependency>
+
+        <!--Apache Commons Lang3-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons-text.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -175,6 +182,7 @@
         <jersey.version>2.32</jersey.version>
         <jackson.version>2.11.3</jackson.version>
         <jsch.version>0.1.55</jsch.version>
+        <commons-text.version>1.9</commons-text.version>
 
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
 

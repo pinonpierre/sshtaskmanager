@@ -47,7 +47,7 @@ public class Application {
     //TODO: Buttons: States based on exec or on cmd?
     //TODO: Publish Docker Image: Tag version instead of just "latest"
     //TODO: Improve Documentation about config files
-    //TODO: Process/Sequence variables
+    //TODO: Process/Sequence local variables
 
     public static void main(String[] args) {
         //Init Log
