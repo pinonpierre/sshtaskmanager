@@ -21,16 +21,27 @@ public class VariableResolver {
         stringSubstitutor = new StringSubstitutor(variableMap);
     }
 
-    public String substituteByValues(String string) {
-        return stringSubstitutor.replace(string);
+    private String substituteValue(String value) {
+        return stringSubstitutor.replace(value);
     }
 
-    public List<String> substituteByValues(List<String> strings) {
-        if (strings == null || strings.isEmpty()) {
-            return strings;
+    public List<String> substituteValues(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return values;
         }
 
-        return strings.stream().map(this::substituteByValues).collect(Collectors.toList());
+        return values.stream().map(this::substituteValue).collect(Collectors.toList());
     }
 
+    public List<Variable> substituteVariableValues(List<Variable> variables) {
+        if (variables == null || variables.isEmpty()) {
+            return variables;
+        }
+        return variables.stream().map(variable -> {
+            Variable newVariable = new Variable();
+            newVariable.setName(variable.getName());
+            newVariable.setValue(substituteValue(variable.getValue()));
+            return newVariable;
+        }).collect(Collectors.toList());
+    }
 }

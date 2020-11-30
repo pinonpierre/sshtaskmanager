@@ -10,6 +10,7 @@ public class Job {
 
     private String name;
     private String processName;
+    private List<Variable> variables;
     private List<Condition> conditions;
 
     public String getName() {
@@ -26,6 +27,14 @@ public class Job {
 
     public void setProcessName(String processName) {
         this.processName = processName;
+    }
+
+    public List<Variable> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(List<Variable> variables) {
+        this.variables = variables;
     }
 
     public List<Condition> getConditions() {

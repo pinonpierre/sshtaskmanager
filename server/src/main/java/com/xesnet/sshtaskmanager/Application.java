@@ -40,6 +40,7 @@ public class Application {
     private static final String CONFIG_DIRECTORY = "config";
     private static final String WEBAPP_DIRECTORY = "/webapp";
 
+    //TODO: Store Buttons
     //TODO: Filtered SSH return
     //TODO: Command template (docker management, machine status)
     //TODO: Buttons: Simple Run or sequence
@@ -47,7 +48,6 @@ public class Application {
     //TODO: Buttons: States based on exec or on cmd?
     //TODO: Publish Docker Image: Tag version instead of just "latest"
     //TODO: Improve Documentation about config files
-    //TODO: Process/Sequence local variables
 
     public static void main(String[] args) {
         //Init Log

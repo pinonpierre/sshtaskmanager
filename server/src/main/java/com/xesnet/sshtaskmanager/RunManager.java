@@ -119,7 +119,7 @@ public class RunManager {
 
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
 
-                List<String> commands = (variables == null || variables.size() == 0) ? process.getCommands() : new VariableResolver(variables).substituteByValues(process.getCommands());
+                List<String> commands = (variables == null || variables.size() == 0) ? process.getCommands() : new VariableResolver(variables).substituteValues(process.getCommands());
                 channel.setCommand(String.join(";", commands));
 
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -224,8 +224,8 @@ public class RunManager {
                 while (job != null) {
                     Job finalJob = job;
                     Process process = backend.getProcess(finalJob.getProcessName());
-
-                    ProcessRunExecution processRunExecution = execute(process, login, variables);
+                    List<Variable> jobVariables = variables == null || variables.isEmpty() || finalJob.getVariables() == null || finalJob.getVariables().isEmpty() ? finalJob.getVariables() : new VariableResolver(variables).substituteVariableValues(finalJob.getVariables());
+                    ProcessRunExecution processRunExecution = execute(process, login, jobVariables);
                     ProcessRun processRun = processRunExecution.getProcessRun();
                     LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] Job \"{1}\" ({2})", sequenceRun.getId(), job.getName(), processRun.getId()));
                     Future<?> future = processRunExecution.getFuture();
@@ -246,13 +246,15 @@ public class RunManager {
                     if (conditions != null) {
                         for (Condition condition : conditions) {
                             if (ConditionChecker.check(processRun, condition)) {
-                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if ({1} {2} {3}) then {4} else {5} => TRUE", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThenJob() == null ? "continue" : ("Job:\"" + condition.getThenJob().getName() + "\""), condition.getElseJob() == null ? "continue" : ("Job:\"" + condition.getElseJob().getName() + "\"")));
+                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if ({1} {2} {3}) then {4} else {5} => TRUE", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThenJob() == null ? "continue" : ("Job:\"" + condition.getThenJob().getName() + "\""),
+                                        condition.getElseJob() == null ? "continue" : ("Job:\"" + condition.getElseJob().getName() + "\"")));
                                 if (condition.getThenJob() != null) {
                                     job = condition.getThenJob();
                                     break;
                                 }
                             } else {
-                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if ({1} {2} {3}) then {4} else {5} => FALSE", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThenJob() == null ? "continue" : ("Job:\"" + condition.getThenJob().getName() + "\""), condition.getElseJob() == null ? "continue" :("Job:\"" + condition.getElseJob().getName() + "\"")));
+                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if ({1} {2} {3}) then {4} else {5} => FALSE", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThenJob() == null ? "continue" : ("Job:\"" + condition.getThenJob().getName() + "\""),
+                                        condition.getElseJob() == null ? "continue" : ("Job:\"" + condition.getElseJob().getName() + "\"")));
                                 if (condition.getElseJob() != null) {
                                     job = condition.getElseJob();
                                     break;
