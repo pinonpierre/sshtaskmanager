@@ -8,7 +8,8 @@ public class Condition {
     private ConditionType type;
     private ConditionOperator operator;
     private String value;
-    private Job then;
+    private Job thenJob;
+    private Job elseJob;
 
     public ConditionType getType() {
         return type;
@@ -34,11 +35,19 @@ public class Condition {
         this.value = value;
     }
 
-    public Job getThen() {
-        return then;
+    public Job getThenJob() {
+        return thenJob;
     }
 
-    public void setThen(Job then) {
-        this.then = then;
+    public void setThenJob(Job thenJob) {
+        this.thenJob = thenJob;
+    }
+
+    public Job getElseJob() {
+        return elseJob;
+    }
+
+    public void setElseJob(Job elseJob) {
+        this.elseJob = elseJob;
     }
 }

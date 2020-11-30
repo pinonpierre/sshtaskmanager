@@ -242,11 +242,17 @@ public class RunManager {
                     if (conditions != null) {
                         for (Condition condition : conditions) {
                             if (ConditionChecker.check(processRun, condition)) {
-                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if {1} {2} {3} then \"{4}\" => YES", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThen().getName()));
-                                job = condition.getThen();
-                                break;
+                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if ({1} {2} {3}) then {4} else {5} => TRUE", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThenJob() == null ? "continue" : ("Job:\"" + condition.getThenJob().getName() + "\""), condition.getElseJob() == null ? "continue" : ("Job:\"" + condition.getElseJob().getName() + "\"")));
+                                if (condition.getThenJob() != null) {
+                                    job = condition.getThenJob();
+                                    break;
+                                }
                             } else {
-                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if {1} {2} {3} then \"{4}\" => NO", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThen().getName()));
+                                LOG.finer(MessageFormat.format("[RunManager] [Sequence] [{0}] [Condition] if ({1} {2} {3}) then {4} else {5} => FALSE", sequenceRun.getId(), condition.getType() == null ? null : condition.getType().getValue(), condition.getOperator() == null ? null : condition.getOperator().getValue(), condition.getValue(), condition.getThenJob() == null ? "continue" : ("Job:\"" + condition.getThenJob().getName() + "\""), condition.getElseJob() == null ? "continue" :("Job:\"" + condition.getElseJob().getName() + "\"")));
+                                if (condition.getElseJob() != null) {
+                                    job = condition.getElseJob();
+                                    break;
+                                }
                             }
                         }
                     }
